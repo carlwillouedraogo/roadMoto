@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sorties_moto
+    username: moto
+    password: moto
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+server:
+  port: 8081
