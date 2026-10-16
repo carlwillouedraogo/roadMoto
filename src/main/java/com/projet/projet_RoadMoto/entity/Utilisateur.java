@@ -1,8 +1,9 @@
 package com.projet.projet_RoadMoto.entity;
 
-import com.projet.projet_RoadMoto.dto.Niveau;
-import com.projet.projet_RoadMoto.dto.Role;
+import com.projet.projet_RoadMoto.domain.Niveau;
+import com.projet.projet_RoadMoto.domain.Role;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -22,6 +23,7 @@ public class Utilisateur {
     private Niveau niveau;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @CreationTimestamp
     private OffsetDateTime creeLe;
 
     @Override
@@ -60,20 +62,20 @@ public class Utilisateur {
         this.email = email;
     }
 
-    public String getMot_de_passe() {
+    public String getMotDePasseHash() {
         return motDePasseHash;
     }
 
-    public void setMot_de_passe(String mot_de_passe) {
-        this.motDePasseHash = mot_de_passe;
+    public void setMotDePasseHash(String motDePasseHash) {
+        this.motDePasseHash = motDePasseHash;
     }
 
-    public String getModel_moto() {
+    public String getMotoModele() {
         return motoModele;
     }
 
-    public void setModel_moto(String model_moto) {
-        this.motoModele = model_moto;
+    public void setMotoModele(String motoModele) {
+        this.motoModele = motoModele;
     }
 
     public Niveau getNiveau() {
@@ -90,5 +92,13 @@ public class Utilisateur {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public OffsetDateTime getCreeLe() {
+        return creeLe;
+    }
+
+    public void setCreeLe(OffsetDateTime creeLe) {
+        this.creeLe = creeLe;
     }
 }
