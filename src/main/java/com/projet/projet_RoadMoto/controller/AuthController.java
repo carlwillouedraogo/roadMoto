@@ -7,6 +7,7 @@ import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.services.UtilisateurService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,4 +30,5 @@ public class AuthController {
     public TokenResponse connecter(@Valid @RequestBody LoginRequest r){
         return utilisateurService.authenticate(r);
     }
+
 }

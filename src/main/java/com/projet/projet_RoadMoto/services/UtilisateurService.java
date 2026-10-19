@@ -56,12 +56,7 @@ public class UtilisateurService {
         u.setNiveau(request.niveau());
         u.setCreeLe(OffsetDateTime.now());
         Utilisateur sauvegarde = repository.save(u);
-        return new UtilisateurResponse(
-                sauvegarde.getId(),
-                sauvegarde.getEmail(),
-                sauvegarde.getPseudo(),
-                sauvegarde.getNiveau()
-        );
+        return toResponse(sauvegarde);
     }
 
     public TokenResponse authenticate(LoginRequest request) {
@@ -77,6 +72,16 @@ public class UtilisateurService {
 
         String jwtToken = jwtService.generateToken(claims, utilisateurDetails);
         return new TokenResponse(jwtToken, jwtService.getExpirationMs());
+    }
+
+    @Transactional(readOnly = true)
+    public UtilisateurResponse byEmail(String email){
+        Utilisateur u = repository.findByEmail(email);
+        return toResponse(u);
+    }
+
+    private UtilisateurResponse toResponse(Utilisateur u) {
+        return new UtilisateurResponse(u.getId(), u.getEmail(), u.getPseudo(), u.getNiveau());
     }
 
 }
