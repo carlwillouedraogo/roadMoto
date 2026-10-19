@@ -80,6 +80,7 @@ public class JwtService {
                 .getPayload();                  // Retourne les claims
     }
 
-
-
+    public long getExpirationMs() {
+        return expirationMs;
+    }
 }

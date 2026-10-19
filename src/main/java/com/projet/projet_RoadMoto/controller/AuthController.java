@@ -1,6 +1,8 @@
 package com.projet.projet_RoadMoto.controller;
 
 import com.projet.projet_RoadMoto.dto.InscriptionRequest;
+import com.projet.projet_RoadMoto.dto.LoginRequest;
+import com.projet.projet_RoadMoto.dto.TokenResponse;
 import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.services.UtilisateurService;
 import jakarta.validation.Valid;
@@ -21,5 +23,10 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public UtilisateurResponse inscrire(@Valid @RequestBody InscriptionRequest request){
         return utilisateurService.inscrire(request);
+    }
+
+    @PostMapping("/login")
+    public TokenResponse connecter(@Valid @RequestBody LoginRequest r){
+        return utilisateurService.authenticate(r);
     }
 }
