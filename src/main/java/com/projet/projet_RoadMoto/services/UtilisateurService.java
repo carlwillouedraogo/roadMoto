@@ -26,15 +26,14 @@ public class UtilisateurService {
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UtilisateurDetailService utilisateurDetailService;
 
 
-    public UtilisateurService(UtilisateurRepository repository, PasswordEncoder encoder, AuthenticationManager authenticationManager, JwtService jwtService, UtilisateurDetailService utilisateurDetailService) {
+    public UtilisateurService(UtilisateurRepository repository, PasswordEncoder encoder, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.repository = repository;
         this.encoder = encoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.utilisateurDetailService = utilisateurDetailService;
+
     }
 
     /**
