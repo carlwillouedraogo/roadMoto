@@ -1,6 +1,7 @@
 package com.projet.projet_RoadMoto.services;
 
 import com.projet.projet_RoadMoto.entity.Utilisateur;
+import com.projet.projet_RoadMoto.exception.EmailDejaUtiliseException;
 import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +19,8 @@ public class UtilisateurDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Utilisateur u = repository.findByEmail(email);
+        Utilisateur u = repository.findByEmail(email)
+                .orElseThrow(() -> new EmailDejaUtiliseException(email));
 
         return User.builder()
                 .username(u.getEmail())

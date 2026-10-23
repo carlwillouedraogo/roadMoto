@@ -75,7 +75,8 @@ public class UtilisateurService {
 
     @Transactional(readOnly = true)
     public UtilisateurResponse byEmail(String email){
-        Utilisateur u = repository.findByEmail(email);
+        Utilisateur u = repository.findByEmail(email)
+                .orElseThrow(() -> new EmailDejaUtiliseException(email));
         return toResponse(u);
     }
 
