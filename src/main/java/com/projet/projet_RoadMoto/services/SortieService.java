@@ -75,6 +75,8 @@ public class SortieService {
         return sortie;
     }
 
+
+
     private SortieResponse toResponse(Sortie sortie){
         int inscrits = participationRepository.countBySortieIdAndStatut(sortie.getId(), StatutParticipation.INSCRIT);
         Utilisateur u = sortie.getOrganisateur();
