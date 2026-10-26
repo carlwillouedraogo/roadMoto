@@ -227,4 +227,3 @@ Les données géographiques proviennent d'[OpenStreetMap](https://www.openstreet
 [swisstopo](https://www.geo.admin.ch).
 
 Projet de démonstration, développé dans un cadre de portfolio.
-
