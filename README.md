@@ -89,6 +89,14 @@ Ce diagramme représente les principales transitions documentées. Les transitio
 
 ---
 
+### Démonstration
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+Comptes de test : `marc@demo.ch`, `lea@demo.ch`, `jon@demo.ch` — mot de passe `demo1234`.
+
 ## Décisions techniques
 
 Les choix ci-dessous sont ceux qui méritent une explication ; le reste suit les
