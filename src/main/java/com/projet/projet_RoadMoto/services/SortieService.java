@@ -4,7 +4,6 @@ import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
 import com.projet.projet_RoadMoto.dto.SortieRequest;
 import com.projet.projet_RoadMoto.dto.SortieResponse;
-import com.projet.projet_RoadMoto.dto.SortieResume;
 import com.projet.projet_RoadMoto.dto.UtilisateurResume;
 import com.projet.projet_RoadMoto.entity.Sortie;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
