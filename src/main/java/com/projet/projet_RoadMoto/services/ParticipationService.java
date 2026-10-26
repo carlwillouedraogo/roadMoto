@@ -33,7 +33,7 @@ public class ParticipationService {
     public ParticipationResponse sInscrire(Long sortieId, String participant){
         Utilisateur utilisateur = utilisateurRepository.findByEmail(participant)
                 .orElseThrow(() -> new UtilisateurIntrouvableException(participant));
-        Sortie sortie = sortieRepository.findById(sortieId)
+        Sortie sortie = sortieRepository.findByIdPourInscription(sortieId)
                 .orElseThrow(() -> new SortieNotFoundException("Cette sortie n'existe pas"));
 
         if (sortie.getStatut() != Statut.PUBLIEE){
