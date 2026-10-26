@@ -91,7 +91,7 @@ public class ParticipationRepositoryTest {
         Sortie sortie = new Sortie();
         sortie.setTitre(titre);
         sortie.setDescription("null");
-        sortie.setDateDepart(OffsetDateTime.now());
+        sortie.setDateDepart(OffsetDateTime.now().plusDays(30));
         sortie.setNomLieuDepart("genève");
         sortie.setLieuDepart(GEO.createPoint(new Coordinate(6.1432,46.2044)));
         sortie.setDistanceKm(12);
