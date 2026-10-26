@@ -33,7 +33,6 @@ public class UtilisateurService {
         this.encoder = encoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-
     }
 
     /**
@@ -79,6 +78,7 @@ public class UtilisateurService {
                 .orElseThrow(() -> new EmailDejaUtiliseException(email));
         return toResponse(u);
     }
+
 
     private UtilisateurResponse toResponse(Utilisateur u) {
         return new UtilisateurResponse(u.getId(), u.getEmail(), u.getPseudo(), u.getNiveau());

@@ -43,7 +43,7 @@ public class ParticipationService {
             throw new InscriptionImpossibleException("Cette sortie est déjà passé");
         }
         if(participationRepository.existsBySortieIdAndUtilisateurId(sortieId, utilisateur.getId())){
-            throw new DejaInscritException(sortieId);
+            throw new DejaInscritException("Vous êtes déjà inscrit à cette sortie");
         }
         int inscrits = participationRepository.countBySortieIdAndStatut(sortieId, StatutParticipation.INSCRIT);
 

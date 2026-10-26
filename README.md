@@ -171,7 +171,13 @@ Swagger UI : `http://localhost:8081/swagger-ui.html`
 ```bash
 ./mvnw verify
 ```
+### Démonstration
 
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+Comptes de test : `marc@demo.ch`, `lea@demo.ch`, `jon@demo.ch` — mot de passe `demo1234`.
 Les tests d'intégration démarrent un conteneur PostGIS via Testcontainers —
 Docker doit être en cours d'exécution. Aucune base préexistante n'est nécessaire.
 
