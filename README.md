@@ -133,6 +133,12 @@ l'élévation de privilèges par le corps de la requête. Les DTO de réponse ex
 données sensibles, l'organisateur d'une sortie publique est exposé par son pseudo,
 jamais par son email.
 
+**Principal métier plutôt que le `User` de Spring**
+Le `UserDetails` renvoyé par le service d'authentification porte l'entité `Utilisateur`
+complète. Les contrôleurs y accèdent via `@AuthenticationPrincipal` sans requête
+supplémentaire auparavant, chaque appel authentifié chargeait l'utilisateur deux fois :
+une dans le filtre JWT, une dans le service.
+
 ---
 
 ## Lancer le projet en local
@@ -215,10 +221,6 @@ La CI exécute la même commande sur chaque pull request.
 **Séparer l'authentification de la gestion des comptes dès le départ.** `UtilisateurService`
 porte aujourd'hui l'inscription et la délivrance de tokens, deux responsabilités qui
 auraient mérité deux services.
-
-**Introduire un UserDetails personnalisé portant l'identifiant.** Chaque requête
-authentifiée recharge l'utilisateur depuis la base pour obtenir son id. Un `UserDetails`
-métier, combiné à `getReferenceById`, éviterait cet aller-retour.
 
 **Modéliser la machine à états explicitement.** Les transitions sont vérifiées par des
 `if` dans le service. Une méthode `peutPasserA(Statut)` sur l'entité rendrait les règles

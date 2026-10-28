@@ -1,8 +1,10 @@
 package com.projet.projet_RoadMoto.controller;
 
+import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.dto.ParticipationResponse;
 import com.projet.projet_RoadMoto.dto.SortieRequest;
 import com.projet.projet_RoadMoto.dto.SortieResponse;
+import com.projet.projet_RoadMoto.security.UtilisateurPrincipal;
 import com.projet.projet_RoadMoto.services.ParticipationService;
 import com.projet.projet_RoadMoto.services.SortieService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,9 +12,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.OffsetDateTime;
 
 @RestController
 @RequestMapping("/api/sorties")
@@ -23,13 +31,14 @@ public class SortieController {
     public SortieController(SortieService sortieService, ParticipationService participationService) {
         this.sortieService = sortieService;
         this.participationService = participationService;
+
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SortieResponse creer(@Valid @RequestBody SortieRequest request,
-                                Authentication authentication) {
-        return sortieService.createSortie(request, authentication.getName());
+                                @AuthenticationPrincipal UtilisateurPrincipal principal) {
+        return sortieService.createSortie(request, principal.getEntite());
     }
     @Operation(
             summary = "S'inscrire à une sortie",
@@ -43,15 +52,21 @@ public class SortieController {
     })
     @PostMapping("/{id}/participation")
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationResponse sInscrire(@PathVariable Long id, Authentication authentication){
-        return participationService.sInscrire(id, authentication.getName());
+    public ParticipationResponse sInscrire(@PathVariable Long id, @AuthenticationPrincipal UtilisateurPrincipal principal){
+        return participationService.sInscrire(id, principal.getEntite());
     }
 
-    @PostMapping("/{id}/publiee")
-    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{id}/publier")
     public SortieResponse publier(@PathVariable Long id,
-                                Authentication authentication) {
-        return sortieService.publierSortie(id, authentication.getName());
+                                  @AuthenticationPrincipal UtilisateurPrincipal principal) {
+        return sortieService.publierSortie(id, principal.getUsername());
+    }
+    @GetMapping
+    public Page<SortieResponse> lister(@RequestParam(required = false) Niveau niveau,
+                                       @RequestParam(required = false) OffsetDateTime dateMax,
+                                       @RequestParam(required = false) Integer placesMin,
+                                       @ParameterObject Pageable pageable){
+        return sortieService.listeSorties(niveau,dateMax,placesMin,pageable);
     }
 
 }

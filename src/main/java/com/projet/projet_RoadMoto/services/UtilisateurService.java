@@ -80,7 +80,7 @@ public class UtilisateurService {
     }
 
 
-    private UtilisateurResponse toResponse(Utilisateur u) {
+    public UtilisateurResponse toResponse(Utilisateur u) {
         return new UtilisateurResponse(u.getId(), u.getEmail(), u.getPseudo(), u.getNiveau());
     }
 

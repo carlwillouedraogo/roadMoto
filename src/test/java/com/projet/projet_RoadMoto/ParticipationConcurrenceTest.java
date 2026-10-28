@@ -4,6 +4,7 @@ import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Role;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
+import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.entity.Sortie;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
 import com.projet.projet_RoadMoto.exception.SortieCompleteException;
@@ -62,13 +63,18 @@ class ParticipationConcurrenceTest {
         utilisateurRepository.deleteAll();
     }
 
+    private Utilisateur motardA;
+    private Utilisateur motardB;
+
     @Test
     void deuxInscriptionsSimultaneesDepassentPasCapaciteTest() throws Exception {
         CountDownLatch topDepart = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
+        motardA = utilisateurRepository.save(creerUtilisateur("motard-a@example.com", "motard-a"));
+        motardB = utilisateurRepository.save(creerUtilisateur("motard-b@example.com", "motard-b"));
 
-        Callable<Boolean> tentativeA = tentative("motard-a@example.com", topDepart);
-        Callable<Boolean> tentativeB = tentative("motard-b@example.com", topDepart);
+        Callable<Boolean> tentativeA = tentative(motardA, topDepart);
+        Callable<Boolean> tentativeB = tentative(motardB, topDepart);
 
         Future<Boolean> resultatA = pool.submit(tentativeA);
         Future<Boolean> resultatB = pool.submit(tentativeB);
@@ -89,11 +95,11 @@ class ParticipationConcurrenceTest {
                 .isEqualTo(2);
     }
 
-    private Callable<Boolean> tentative(String email, CountDownLatch topDepart) {
+    private Callable<Boolean> tentative(Utilisateur utilisateur, CountDownLatch topDepart) {
         return () -> {
             topDepart.await();
             try {
-                participationService.sInscrire(sortie.getId(), email);
+                participationService.sInscrire(sortie.getId(), utilisateur);
                 return true;
             } catch (SortieCompleteException e) {
                 return false;   // SortieCompleteException attendue pour le perdant

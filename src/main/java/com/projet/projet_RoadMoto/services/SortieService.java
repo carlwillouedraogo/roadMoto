@@ -1,5 +1,6 @@
 package com.projet.projet_RoadMoto.services;
 
+import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
 import com.projet.projet_RoadMoto.dto.SortieRequest;
@@ -16,9 +17,13 @@ import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
 
 @Service
 public class SortieService {
@@ -38,11 +43,9 @@ public class SortieService {
     }
 
     @Transactional
-    public SortieResponse createSortie(SortieRequest request, String organisateur){
-        Utilisateur organisateur1 = utilisateurRepository.findByEmail(organisateur)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
-        Sortie sortie = sortieRepository.save(creeSortie(request, organisateur1));
-        participationService.inscrireOrganisateur(sortie,organisateur1);
+    public SortieResponse createSortie(SortieRequest request, Utilisateur organisateur){
+        Sortie sortie = sortieRepository.save(creeSortie(request, organisateur));
+        participationService.inscrireOrganisateur(sortie,organisateur);
         return toResponse(sortie);
     }
 
@@ -58,6 +61,12 @@ public class SortieService {
         }
         sortie.setStatut(Statut.PUBLIEE);
         return toResponse(sortie);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SortieResponse> listeSorties(Niveau niveau, OffsetDateTime dateMax, Integer placesMin, Pageable pageable) {
+        Page<Sortie> page = sortieRepository.rechercher(OffsetDateTime.now(), niveau, dateMax, placesMin, pageable);
+        return page.map(this::toResponse);
     }
 
     private Sortie creeSortie(SortieRequest request, Utilisateur organisateur){

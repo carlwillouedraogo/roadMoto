@@ -30,9 +30,7 @@ public class ParticipationService {
     }
 
     @Transactional
-    public ParticipationResponse sInscrire(Long sortieId, String participant){
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(participant)
-                .orElseThrow(() -> new UtilisateurIntrouvableException(participant));
+    public ParticipationResponse sInscrire(Long sortieId, Utilisateur participant){
         Sortie sortie = sortieRepository.findByIdPourInscription(sortieId)
                 .orElseThrow(() -> new SortieNotFoundException("Cette sortie n'existe pas"));
 
@@ -42,7 +40,7 @@ public class ParticipationService {
         if (sortie.getDateDepart().isBefore(OffsetDateTime.now())){
             throw new InscriptionImpossibleException("Cette sortie est déjà passé");
         }
-        if(participationRepository.existsBySortieIdAndUtilisateurId(sortieId, utilisateur.getId())){
+        if(participationRepository.existsBySortieIdAndUtilisateurId(sortieId, participant.getId())){
             throw new DejaInscritException("Vous êtes déjà inscrit à cette sortie");
         }
         int inscrits = participationRepository.countBySortieIdAndStatut(sortieId, StatutParticipation.INSCRIT);
@@ -50,7 +48,7 @@ public class ParticipationService {
         if (inscrits >= sortie.getPlacesMax()){
             throw new SortieCompleteException(sortieId);
         }
-        Participation participation = enregistrer(sortie, utilisateur);
+        Participation participation = enregistrer(sortie, participant);
 
         if (inscrits + 1 == sortie.getPlacesMax()) {
             sortie.setStatut(Statut.COMPLETE);
@@ -79,16 +77,9 @@ public class ParticipationService {
         placesRestantes = participationRepository.countBySortieIdAndStatut(participation.getSortie().getId(),StatutParticipation.INSCRIT);
         ParticipationResponse participationResponse = new ParticipationResponse(participation.getId(),participation.getSortie().getId(),
                 utilisateurResume,participation.getStatut(),
-                participation.getInscritLe(),participation.getSortie().getPlacesMax() - placesRestantes) ;
+                participation.getInscritLe(), placesRestantes) ;
         return participationResponse;
     }
 
-    private Participation creerParticipation(Utilisateur utilisateur, Sortie sortie){
-        Participation participation = new Participation();
-        participation.setSortie(sortie);
-        participation.setUtilisateur(utilisateur);
-        participation.setStatut(StatutParticipation.INSCRIT);
-        return participation;
-    }
 
 }
