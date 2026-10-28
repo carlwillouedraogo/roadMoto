@@ -4,17 +4,14 @@ spring:
     username: moto
     password: moto
   jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        ddl-auto: validate
-        format_sql: true
-        generate_statistics: true
+    hibernate:
+      ddl-auto: validate
   data:
     web:
       pageable:
         default-page-size: 20
         max-page-size: 100
+
 app:
   jwt:
     # Clé encodée en Base64 (min. 256 bits) — générer avec : openssl rand -base64 32
@@ -23,3 +20,15 @@ app:
 
 server:
   port: 8081
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true

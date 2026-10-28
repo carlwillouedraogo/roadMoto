@@ -151,6 +151,9 @@ docker compose up -d
 
 # 2. Application
 ./mvnw spring-boot:run
+
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev    # logs SQL et statistiques
+./mvnw spring-boot:run -Dspring-boot.run.profiles=demo   # jeu de données de démonstration
 ```
 
 L'API écoute sur `http://localhost:8081`.
