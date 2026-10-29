@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 
 @Service
@@ -34,13 +35,18 @@ public class ParticipationService {
         Sortie sortie = sortieRepository.findByIdPourInscription(sortieId)
                 .orElseThrow(() -> new SortieNotFoundException("Cette sortie n'existe pas"));
 
+        if (sortie.getStatut() == Statut.COMPLETE){
+            throw new SortieCompleteException(sortieId);
+        }
         if (sortie.getStatut() != Statut.PUBLIEE){
             throw new InscriptionImpossibleException("Cette sortie n'accepte pas d'inscription");
         }
         if (sortie.getDateDepart().isBefore(OffsetDateTime.now())){
             throw new InscriptionImpossibleException("Cette sortie est déjà passé");
         }
-        if(participationRepository.existsBySortieIdAndUtilisateurId(sortieId, participant.getId())){
+        Optional<Participation> existante = participationRepository.findBySortieIdAndUtilisateurId(sortieId, participant.getId());
+
+        if(existante.filter(p -> p.getStatut() == StatutParticipation.INSCRIT).isPresent()){
             throw new DejaInscritException("Vous êtes déjà inscrit à cette sortie");
         }
         int inscrits = participationRepository.countBySortieIdAndStatut(sortieId, StatutParticipation.INSCRIT);
@@ -48,38 +54,71 @@ public class ParticipationService {
         if (inscrits >= sortie.getPlacesMax()){
             throw new SortieCompleteException(sortieId);
         }
-        Participation participation = enregistrer(sortie, participant);
+        // un participant qui s'était désisté réutilise sa ligne (contrainte unique sortie/utilisateur)
+        Participation participation = existante
+                .map(this::reactiver)
+                .orElseGet(() -> enregistrer(sortie, participant,StatutParticipation.INSCRIT));
 
         if (inscrits + 1 == sortie.getPlacesMax()) {
             sortie.setStatut(Statut.COMPLETE);
         }
 
         return creerParticipationResponse(participation, sortie.getPlacesMax() - (inscrits + 1));
-
     }
 
     @Transactional
     public Participation inscrireOrganisateur(Sortie sortie, Utilisateur organisateur) {
-        return enregistrer(sortie, organisateur);
+        return enregistrer(sortie, organisateur,StatutParticipation.INSCRIT);
     }
 
-    private Participation enregistrer(Sortie sortie, Utilisateur utilisateur) {
+    @Transactional
+    public ParticipationResponse desInscription(Long id, Utilisateur participant){
+        Sortie sortie = sortieRepository.findByIdPourInscription(id)
+                .orElseThrow(()->new SortieNotFoundException("Cette sortie n'existe pas"));
+        Participation participation = participationRepository.findBySortieIdAndUtilisateurId(id, participant.getId())
+                .filter(p -> p.getStatut() == StatutParticipation.INSCRIT)
+                .orElseThrow(()->new NonInscritException("Vous n'êtes pas inscrit à cette sortie"));
+
+        if (sortie.getOrganisateur().getId() == participant.getId()){
+            throw new InscriptionImpossibleException("L'organisateur ne peut pas se désincrire de sa sortie");
+        }
+        if (sortie.getDateDepart().isBefore(OffsetDateTime.now())){
+            throw new SortieDejaPartieException("On ne peut pas se désinscrire d'une sortie déjà partie");
+        }
+
+        participation.setStatut(StatutParticipation.DESIST);
+
+        // une place se libère : une sortie complète redevient ouverte
+        if(sortie.getStatut() == Statut.COMPLETE){
+            sortie.setStatut(Statut.PUBLIEE);
+        }
+
+        // le count déclenche un flush automatique, il tient donc compte du désistement
+        int inscrits = participationRepository.countBySortieIdAndStatut(id,StatutParticipation.INSCRIT);
+
+        return creerParticipationResponse(participation, sortie.getPlacesMax()-inscrits);
+    }
+
+    private Participation reactiver(Participation participation) {
+        participation.setStatut(StatutParticipation.INSCRIT);
+        participation.setInscritLe(OffsetDateTime.now());
+        return participation;
+    }
+
+    private Participation enregistrer(Sortie sortie, Utilisateur utilisateur, StatutParticipation statutParticipation) {
         Participation p = new Participation();
         p.setSortie(sortie);
         p.setUtilisateur(utilisateur);
-        p.setStatut(StatutParticipation.INSCRIT);
+        p.setStatut(statutParticipation);
         return participationRepository.save(p);
     }
 
     private ParticipationResponse creerParticipationResponse(Participation participation, int placesRestantes){
         Utilisateur u = participation.getUtilisateur();
         UtilisateurResume utilisateurResume = new UtilisateurResume(u.getId(), u.getPseudo());
-        placesRestantes = participationRepository.countBySortieIdAndStatut(participation.getSortie().getId(),StatutParticipation.INSCRIT);
         ParticipationResponse participationResponse = new ParticipationResponse(participation.getId(),participation.getSortie().getId(),
                 utilisateurResume,participation.getStatut(),
-                participation.getInscritLe(), placesRestantes) ;
+                participation.getInscritLe(), placesRestantes);
         return participationResponse;
     }
-
-
 }

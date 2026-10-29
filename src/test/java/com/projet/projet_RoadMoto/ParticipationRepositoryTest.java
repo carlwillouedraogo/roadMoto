@@ -4,12 +4,18 @@ import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Role;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
+import com.projet.projet_RoadMoto.dto.ParticipationResponse;
 import com.projet.projet_RoadMoto.entity.Participation;
 import com.projet.projet_RoadMoto.entity.Sortie;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
+import com.projet.projet_RoadMoto.exception.DejaInscritException;
+import com.projet.projet_RoadMoto.exception.InscriptionImpossibleException;
+import com.projet.projet_RoadMoto.exception.NonInscritException;
+import com.projet.projet_RoadMoto.exception.SortieDejaPartieException;
 import com.projet.projet_RoadMoto.repository.ParticipationRepository;
 import com.projet.projet_RoadMoto.repository.SortieRepository;
 import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
+import com.projet.projet_RoadMoto.services.ParticipationService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -31,7 +37,7 @@ import java.time.OffsetDateTime;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@Import(TestcontainersConfig.class)
+@Import({TestcontainersConfig.class, ParticipationService.class})
 public class ParticipationRepositoryTest {
 
     private static final GeometryFactory GEO =
@@ -43,6 +49,8 @@ public class ParticipationRepositoryTest {
     private SortieRepository sortieRepository;
     @Autowired
     private UtilisateurRepository utilisateurRepository;
+    @Autowired
+    private ParticipationService participationService;
     @Autowired
     private TestEntityManager em;
 
@@ -77,6 +85,135 @@ public class ParticipationRepositoryTest {
         Assertions.assertThatThrownBy(() ->
                 participationRepository.saveAndFlush(creerParticipation(motard, sortie)))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void testDesinscriptionPasseParticipationEnDesist(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = sortieRepository.save(creerSortie("Tour du Léman", organisateur));
+        Participation participation = participationRepository.saveAndFlush(creerParticipation(motard, sortie));
+
+        ParticipationResponse reponse = participationService.desInscription(sortie.getId(), motard);
+
+        em.flush();
+        em.clear();
+
+        Participation relue = participationRepository.findById(participation.getId()).orElseThrow();
+        Assertions.assertThat(relue.getStatut()).isEqualTo(StatutParticipation.DESIST);
+        Assertions.assertThat(reponse.statut()).isEqualTo(StatutParticipation.DESIST);
+        Assertions.assertThat(reponse.placesRestantes()).isEqualTo(10);
+        Assertions.assertThat(participationRepository.countBySortieIdAndStatut(sortie.getId(), StatutParticipation.INSCRIT)).isZero();
+    }
+
+    @Test
+    void testDesinscriptionNonInscritRefusee(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = sortieRepository.save(creerSortie("Tour du Léman", organisateur));
+
+        Assertions.assertThatThrownBy(() ->
+                participationService.desInscription(sortie.getId(), motard))
+                .isInstanceOf(NonInscritException.class);
+    }
+
+    @Test
+    void testDesinscriptionDejaDesisteRefusee(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = sortieRepository.save(creerSortie("Tour du Léman", organisateur));
+        participationRepository.saveAndFlush(creerParticipation(motard, sortie));
+
+        participationService.desInscription(sortie.getId(), motard);
+
+        Assertions.assertThatThrownBy(() ->
+                participationService.desInscription(sortie.getId(), motard))
+                .isInstanceOf(NonInscritException.class);
+    }
+
+    @Test
+    void testOrganisateurNePeutPasSeDesinscrire(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Sortie sortie = creerSortie("Tour du Léman", organisateur);
+        sortie.setStatut(Statut.PUBLIEE);
+        Sortie publiee = sortieRepository.save(sortie);
+        participationService.inscrireOrganisateur(publiee, organisateur);
+
+        Assertions.assertThatThrownBy(() ->
+                participationService.desInscription(publiee.getId(), organisateur))
+                .isInstanceOf(InscriptionImpossibleException.class);
+        Assertions.assertThat(participationRepository.countBySortieIdAndStatut(publiee.getId(), StatutParticipation.INSCRIT)).isEqualTo(1);
+    }
+
+    @Test
+    void testReinscriptionApresDesistement(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = creerSortie("Tour du Léman", organisateur);
+        sortie.setStatut(Statut.PUBLIEE);
+        sortie = sortieRepository.save(sortie);
+
+        ParticipationResponse inscription = participationService.sInscrire(sortie.getId(), motard);
+        participationService.desInscription(sortie.getId(), motard);
+        ParticipationResponse reinscription = participationService.sInscrire(sortie.getId(), motard);
+
+        em.flush();
+        em.clear();
+
+        Assertions.assertThat(reinscription.id()).isEqualTo(inscription.id());   // même ligne réactivée
+        Assertions.assertThat(reinscription.statut()).isEqualTo(StatutParticipation.INSCRIT);
+        Assertions.assertThat(reinscription.placesRestantes()).isEqualTo(9);
+        Assertions.assertThat(participationRepository.findById(inscription.id()).orElseThrow().getStatut())
+                .isEqualTo(StatutParticipation.INSCRIT);
+    }
+
+    @Test
+    void testInscriptionDejaInscritRefusee(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = creerSortie("Tour du Léman", organisateur);
+        sortie.setStatut(Statut.PUBLIEE);
+        Sortie publiee = sortieRepository.save(sortie);
+
+        participationService.sInscrire(publiee.getId(), motard);
+
+        Assertions.assertThatThrownBy(() ->
+                participationService.sInscrire(publiee.getId(), motard))
+                .isInstanceOf(DejaInscritException.class);
+    }
+
+    @Test
+    void testDesinscriptionSortieDejaPartieRefusee(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = creerSortie("Tour du Léman", organisateur);
+        sortie.setStatut(Statut.PUBLIEE);
+        sortie.setDateDepart(OffsetDateTime.now().minusMinutes(5));
+        Sortie partie = sortieRepository.save(sortie);
+        participationRepository.saveAndFlush(creerParticipation(motard, partie));
+
+        Assertions.assertThatThrownBy(() ->
+                participationService.desInscription(partie.getId(), motard))
+                .isInstanceOf(SortieDejaPartieException.class);
+    }
+
+    @Test
+    void testDesinscriptionRouvreSortieComplete(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie sortie = creerSortie("Tour du Léman", organisateur);
+        sortie.setPlacesMax(2);                          // minimum imposé par ck_sortie_places_max
+        sortie.setStatut(Statut.COMPLETE);
+        sortie = sortieRepository.save(sortie);
+        participationRepository.save(creerParticipation(organisateur, sortie));
+        participationRepository.saveAndFlush(creerParticipation(motard, sortie));
+
+        participationService.desInscription(sortie.getId(), motard);
+
+        em.flush();
+        em.clear();
+
+        Assertions.assertThat(sortieRepository.findById(sortie.getId()).orElseThrow().getStatut()).isEqualTo(Statut.PUBLIEE);
     }
 
     private Participation creerParticipation(Utilisateur utilisateur, Sortie sortie){

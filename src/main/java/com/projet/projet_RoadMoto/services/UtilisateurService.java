@@ -6,6 +6,7 @@ import com.projet.projet_RoadMoto.dto.LoginRequest;
 import com.projet.projet_RoadMoto.dto.TokenResponse;
 import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
+import com.projet.projet_RoadMoto.exception.UtilisateurIntrouvableException;
 import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
 import com.projet.projet_RoadMoto.exception.EmailDejaUtiliseException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -75,7 +76,7 @@ public class UtilisateurService {
     @Transactional(readOnly = true)
     public UtilisateurResponse byEmail(String email){
         Utilisateur u = repository.findByEmail(email)
-                .orElseThrow(() -> new EmailDejaUtiliseException(email));
+                .orElseThrow(() -> new UtilisateurIntrouvableException(email));
         return toResponse(u);
     }
 

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
 public interface SortieRepository extends JpaRepository<Sortie, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from Sortie s where s.id = :id")
+    @EntityGraph(attributePaths = "organisateur")
     Optional<Sortie> findByIdPourInscription(@Param("id") Long id);
 
     @EntityGraph(attributePaths = "organisateur")
@@ -34,4 +36,14 @@ public interface SortieRepository extends JpaRepository<Sortie, Long> {
                             @Param("dateMax") OffsetDateTime dateMax,
                             @Param("placesMin") Integer placesMin,
                             Pageable pageable);
+
+    // fin de balade = départ + durée estimée (départ seul si la durée est inconnue)
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = """
+    update sortie
+       set statut = 'TERMINEE', version = version + 1
+     where statut in ('PUBLIEE', 'COMPLETE')
+       and date_depart + make_interval(mins => coalesce(duree_estimee_min, 0)) < :maintenant
+    """, nativeQuery = true)
+    int terminerSortiesPassees(@Param("maintenant") OffsetDateTime maintenant);
 }

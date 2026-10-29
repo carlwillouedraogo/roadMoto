@@ -61,12 +61,33 @@ public class SortieController {
                                   @AuthenticationPrincipal UtilisateurPrincipal principal) {
         return sortieService.publierSortie(id, principal.getUsername());
     }
+
+    @PostMapping("/{id}/annuler")
+    public SortieResponse annuler(@PathVariable Long id,
+                                  @AuthenticationPrincipal UtilisateurPrincipal principal) {
+        return sortieService.annulerSortie(id, principal.getUsername());
+    }
     @GetMapping
     public Page<SortieResponse> lister(@RequestParam(required = false) Niveau niveau,
                                        @RequestParam(required = false) OffsetDateTime dateMax,
                                        @RequestParam(required = false) Integer placesMin,
                                        @ParameterObject Pageable pageable){
         return sortieService.listeSorties(niveau,dateMax,placesMin,pageable);
+    }
+
+    @GetMapping("/{id}")
+    public SortieResponse detailSortie(@PathVariable Long id,
+                                       @AuthenticationPrincipal UtilisateurPrincipal principal){
+        return sortieService.detailSortie(id, principal != null ? principal.getEntite() : null);
+    }
+    @DeleteMapping("/{id}/participation")
+    public ParticipationResponse desincrire(@PathVariable Long id, @AuthenticationPrincipal UtilisateurPrincipal principal){
+        return participationService.desInscription(id,principal.getEntite());
+    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void supprimer(@PathVariable Long id, @AuthenticationPrincipal UtilisateurPrincipal principal){
+        sortieService.deleteSortie(id, principal.getEntite());
     }
 
 }

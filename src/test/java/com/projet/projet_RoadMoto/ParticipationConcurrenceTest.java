@@ -52,8 +52,8 @@ class ParticipationConcurrenceTest {
         sortie = sortieRepository.save(creerSortie("Col du Susten", organisateur, 2));
         participationService.inscrireOrganisateur(sortie, organisateur);
 
-        utilisateurRepository.save(creerUtilisateur("motard-a@example.com", "motard-a"));
-        utilisateurRepository.save(creerUtilisateur("motard-b@example.com", "motard-b"));
+        motardA = utilisateurRepository.save(creerUtilisateur("motard-a@example.com", "motard-a"));
+        motardB = utilisateurRepository.save(creerUtilisateur("motard-b@example.com", "motard-b"));
     }
 
     @AfterEach
@@ -70,8 +70,6 @@ class ParticipationConcurrenceTest {
     void deuxInscriptionsSimultaneesDepassentPasCapaciteTest() throws Exception {
         CountDownLatch topDepart = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
-        motardA = utilisateurRepository.save(creerUtilisateur("motard-a@example.com", "motard-a"));
-        motardB = utilisateurRepository.save(creerUtilisateur("motard-b@example.com", "motard-b"));
 
         Callable<Boolean> tentativeA = tentative(motardA, topDepart);
         Callable<Boolean> tentativeB = tentative(motardB, topDepart);
