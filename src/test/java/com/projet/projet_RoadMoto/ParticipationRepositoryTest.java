@@ -4,6 +4,7 @@ import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Role;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
+import com.projet.projet_RoadMoto.dto.HistoriqueParticipationResponse;
 import com.projet.projet_RoadMoto.dto.ParticipationResponse;
 import com.projet.projet_RoadMoto.entity.Participation;
 import com.projet.projet_RoadMoto.entity.Sortie;
@@ -27,6 +28,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -214,6 +217,33 @@ public class ParticipationRepositoryTest {
         em.clear();
 
         Assertions.assertThat(sortieRepository.findById(sortie.getId()).orElseThrow().getStatut()).isEqualTo(Statut.PUBLIEE);
+    }
+
+    @Test
+    void testHistoriqueParticipant(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
+        Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        Sortie inscrite = sortieRepository.save(creerSortie("Tour du Léman", organisateur));
+        Sortie quittee = sortieRepository.save(creerSortie("Col de la Faucille", organisateur));
+        Sortie organisee = sortieRepository.save(creerSortie("Ma balade", motard));
+        participationRepository.save(creerParticipation(motard, inscrite));
+        Participation desistement = creerParticipation(motard, quittee);
+        desistement.setStatut(StatutParticipation.DESIST);
+        participationRepository.save(desistement);
+        participationService.inscrireOrganisateur(organisee, motard);
+
+        em.flush();
+        em.clear();
+
+        Page<HistoriqueParticipationResponse> historique = participationService.historique(motard, null, PageRequest.of(0, 10));
+        Page<HistoriqueParticipationResponse> desistements = participationService.historique(motard, StatutParticipation.DESIST, PageRequest.of(0, 10));
+
+        // la sortie qu'il organise relève de l'historique organisateur
+        Assertions.assertThat(historique.getContent()).extracting(h -> h.sortie().id())
+                .containsExactlyInAnyOrder(inscrite.getId(), quittee.getId());
+        Assertions.assertThat(desistements.getContent()).extracting(h -> h.sortie().id())
+                .containsExactly(quittee.getId());
+        Assertions.assertThat(desistements.getContent().get(0).sortie().organisateur().pseudo()).isEqualTo("orga");
     }
 
     private Participation creerParticipation(Utilisateur utilisateur, Sortie sortie){

@@ -68,9 +68,10 @@ stateDiagram-v2
     [*] --> BROUILLON : Création
     BROUILLON --> PUBLIEE : Publication
     PUBLIEE --> COMPLETE : Dernière place réservée
-    BROUILLON --> ANNULEE : Annulation
+    BROUILLON --> SUPPRIMER : Suppression
     PUBLIEE --> ANNULEE : Annulation
     COMPLETE --> ANNULEE : Annulation
+    COMPLETE --> TERMINEE : Balade effectué
 ```
 
 Ce diagramme représente les principales transitions documentées. Les transitions effectives restent contrôlées par les règles du service métier.
@@ -211,6 +212,8 @@ La CI exécute la même commande sur chaque pull request.
 - [x] Sorties : création, publication, machine à états
 - [x] Participations et règles d'inscription
 - [x] Intégration continue
+- [x] Désincription à une sortie
+- [x] Historique pour les participants et l'organisateur
 - [ ] Import des POI depuis OpenStreetMap (canton pilote : Valais)
 - [ ] Calcul d'itinéraires et mise en cache
 - [ ] Assistant d'itinéraire à sortie JSON structurée
