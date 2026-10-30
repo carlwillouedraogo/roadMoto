@@ -568,6 +568,32 @@ public class SortieRepositoryTest {
     }
 
     /**
+     * Test vérifiant que l'historique de l'organisateur contient toutes ses sorties, et seulement les siennes
+     */
+
+    @Test
+    void testHistoriqueOrganisateur(){
+        Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@gmail.com","orga"));
+        Utilisateur autre = utilisateurRepository.save(creerUtilisateur("autre@gmail.com","autre"));
+        Sortie brouillon = sortieRepository.save(creerSortie("brouillon", organisateur, Statut.BROUILLON));
+        Sortie terminee = creerSortie("terminée", organisateur, Statut.TERMINEE);
+        terminee.setDateDepart(OffsetDateTime.now().minusDays(7));
+        terminee = sortieRepository.save(terminee);
+        sortieRepository.save(creerSortie("pas la mienne", autre, Statut.PUBLIEE));
+
+        em.flush();
+        em.clear();
+
+        Page<SortieResponse> toutes = sortieService.historiqueOrganisateur(organisateur, null, PageRequest.of(0, 10));
+        Page<SortieResponse> terminees = sortieService.historiqueOrganisateur(organisateur, Statut.TERMINEE, PageRequest.of(0, 10));
+
+        assertThat(toutes.getContent()).extracting(SortieResponse::id)
+                .containsExactly(brouillon.getId(), terminee.getId());   // plus récente d'abord
+        assertThat(terminees.getContent()).extracting(SortieResponse::id)
+                .containsExactly(terminee.getId());
+    }
+
+    /**
      * Méthode permettant de créér une sortie
      * @param titre
      * @param utilisateur

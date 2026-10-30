@@ -125,6 +125,20 @@ public class SortieService {
     }
 
     /**
+     * Méthode listant toutes les sorties créées par l'organisateur, brouillons et annulées comprises
+     * @param organisateur
+     * @param statut filtre optionnel
+     * @param pageable
+     * @return SortieResponse
+     */
+
+    @Transactional(readOnly = true)
+    public Page<SortieResponse> historiqueOrganisateur(Utilisateur organisateur, Statut statut, Pageable pageable) {
+        return sortieRepository.historiqueOrganisateur(organisateur.getId(), statut, pageable)
+                .map(this::toResponse);
+    }
+
+    /**
      * Méthode permettant de consulter les détails d'une sortie
      * @param id
      * @param organisateur

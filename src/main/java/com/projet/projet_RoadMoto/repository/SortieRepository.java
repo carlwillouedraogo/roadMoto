@@ -1,6 +1,7 @@
 package com.projet.projet_RoadMoto.repository;
 
 import com.projet.projet_RoadMoto.domain.Niveau;
+import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.entity.Sortie;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
@@ -46,4 +47,15 @@ public interface SortieRepository extends JpaRepository<Sortie, Long> {
        and date_depart + make_interval(mins => coalesce(duree_estimee_min, 0)) < :maintenant
     """, nativeQuery = true)
     int terminerSortiesPassees(@Param("maintenant") OffsetDateTime maintenant);
+
+    @EntityGraph(attributePaths = "organisateur")
+    @Query("""
+    select s from Sortie s
+    where s.organisateur.id = :organisateurId
+      and s.statut = coalesce(:statut, s.statut)
+    order by s.dateDepart desc
+    """)
+    Page<Sortie> historiqueOrganisateur(@Param("organisateurId") Long organisateurId,
+                                        @Param("statut") Statut statut,
+                                        Pageable pageable);
 }

@@ -2,7 +2,9 @@ package com.projet.projet_RoadMoto.services;
 
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
+import com.projet.projet_RoadMoto.dto.HistoriqueParticipationResponse;
 import com.projet.projet_RoadMoto.dto.ParticipationResponse;
+import com.projet.projet_RoadMoto.dto.SortieResume;
 import com.projet.projet_RoadMoto.dto.UtilisateurResume;
 import com.projet.projet_RoadMoto.entity.Participation;
 import com.projet.projet_RoadMoto.entity.Sortie;
@@ -11,6 +13,8 @@ import com.projet.projet_RoadMoto.exception.*;
 import com.projet.projet_RoadMoto.repository.ParticipationRepository;
 import com.projet.projet_RoadMoto.repository.SortieRepository;
 import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +103,20 @@ public class ParticipationService {
         return creerParticipationResponse(participation, sortie.getPlacesMax()-inscrits);
     }
 
+    /**
+     * Méthode listant les sorties auxquelles l'utilisateur s'est inscrit, désistements compris
+     * @param participant
+     * @param statut filtre optionnel
+     * @param pageable
+     * @return HistoriqueParticipationResponse
+     */
+
+    @Transactional(readOnly = true)
+    public Page<HistoriqueParticipationResponse> historique(Utilisateur participant, StatutParticipation statut, Pageable pageable){
+        return participationRepository.historique(participant.getId(), statut, pageable)
+                .map(this::toHistorique);
+    }
+
     private Participation reactiver(Participation participation) {
         participation.setStatut(StatutParticipation.INSCRIT);
         participation.setInscritLe(OffsetDateTime.now());
@@ -111,6 +129,19 @@ public class ParticipationService {
         p.setUtilisateur(utilisateur);
         p.setStatut(statutParticipation);
         return participationRepository.save(p);
+    }
+
+    private HistoriqueParticipationResponse toHistorique(Participation participation){
+        Sortie s = participation.getSortie();
+        Utilisateur o = s.getOrganisateur();
+        SortieResume sortieResume = new SortieResume(s.getId(), s.getTitre(),
+                s.getDescription(), s.getDateDepart(),
+                s.getNomLieuDepart(), s.getLieuDepart().getY(),
+                s.getLieuDepart().getX(), s.getNiveau(),
+                s.getStatut(), s.getPlacesMax(),
+                new UtilisateurResume(o.getId(), o.getPseudo()), s.getCreeLe());
+        return new HistoriqueParticipationResponse(participation.getId(), participation.getStatut(),
+                participation.getInscritLe(), sortieResume);
     }
 
     private ParticipationResponse creerParticipationResponse(Participation participation, int placesRestantes){
