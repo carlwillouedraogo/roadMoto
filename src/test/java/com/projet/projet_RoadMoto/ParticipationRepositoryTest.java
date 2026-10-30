@@ -238,9 +238,9 @@ public class ParticipationRepositoryTest {
         Page<HistoriqueParticipationResponse> historique = participationService.historique(motard, null, PageRequest.of(0, 10));
         Page<HistoriqueParticipationResponse> desistements = participationService.historique(motard, StatutParticipation.DESIST, PageRequest.of(0, 10));
 
-        // la sortie qu'il organise relève de l'historique organisateur
+        // l'organisateur étant inscrit d'office, ses propres sorties figurent aussi dans son historique
         Assertions.assertThat(historique.getContent()).extracting(h -> h.sortie().id())
-                .containsExactlyInAnyOrder(inscrite.getId(), quittee.getId());
+                .containsExactlyInAnyOrder(inscrite.getId(), quittee.getId(), organisee.getId());
         Assertions.assertThat(desistements.getContent()).extracting(h -> h.sortie().id())
                 .containsExactly(quittee.getId());
         Assertions.assertThat(desistements.getContent().get(0).sortie().organisateur().pseudo()).isEqualTo("orga");

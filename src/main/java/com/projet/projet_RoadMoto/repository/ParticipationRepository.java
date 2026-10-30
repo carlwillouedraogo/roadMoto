@@ -16,7 +16,6 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     int countBySortieIdAndStatut(Long id, StatutParticipation statutParticipation);
     Optional<Participation> findBySortieIdAndUtilisateurId(Long sortieId, Long utilisateurId);
 
-    // les sorties organisées ont leur propre historique, on ne les répète pas ici
     @EntityGraph(attributePaths = {"sortie", "sortie.organisateur"})
     @Query("""
     select p from Participation p
