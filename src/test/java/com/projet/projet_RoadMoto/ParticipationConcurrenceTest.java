@@ -27,6 +27,11 @@ import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Vérifie qu'on ne peut pas dépasser la capacité d'une sortie quand deux inscriptions arrivent en même temps.
+ * @SpringBootTest (et pas @DataJpaTest) : chaque thread doit avoir sa propre transaction réellement validée,
+ * d'où le nettoyage manuel de la base dans @AfterEach (pas de rollback automatique).
+ */
 @SpringBootTest
 @Import(TestcontainersConfig.class)
 class ParticipationConcurrenceTest {
@@ -56,6 +61,7 @@ class ParticipationConcurrenceTest {
         motardB = utilisateurRepository.save(creerUtilisateur("motard-b@example.com", "motard-b"));
     }
 
+    // ordre de suppression imposé par les clés étrangères : participations, puis sorties, puis utilisateurs
     @AfterEach
     void nettoyer() {
         participationRepository.deleteAll();
@@ -68,6 +74,7 @@ class ParticipationConcurrenceTest {
 
     @Test
     void deuxInscriptionsSimultaneesDepassentPasCapaciteTest() throws Exception {
+        // le latch bloque les deux threads jusqu'au countDown(), pour qu'ils tentent l'inscription au même moment
         CountDownLatch topDepart = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
 
@@ -79,6 +86,7 @@ class ParticipationConcurrenceTest {
 
         topDepart.countDown();   // les deux threads partent ensemble
 
+        // timeout de 10 s : évite que le test reste bloqué si un thread ne rend jamais la main
         int succes = (resultatA.get(10, TimeUnit.SECONDS) ? 1 : 0)
                 + (resultatB.get(10, TimeUnit.SECONDS) ? 1 : 0);
         pool.shutdown();
@@ -90,9 +98,10 @@ class ParticipationConcurrenceTest {
         assertThat(participationRepository.countBySortieIdAndStatut(
                 sortie.getId(), StatutParticipation.INSCRIT))
                 .as("la capacité ne doit jamais être dépassée")
-                .isEqualTo(2);
+                .isEqualTo(2);   // organisateur + le seul motard qui a obtenu la place
     }
 
+    // Une tentative d'inscription : renvoie true si elle réussit, false si la sortie était déjà complète
     private Callable<Boolean> tentative(Utilisateur utilisateur, CountDownLatch topDepart) {
         return () -> {
             topDepart.await();

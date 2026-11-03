@@ -6,7 +6,7 @@ import com.projet.projet_RoadMoto.domain.StatutParticipation;
 import com.projet.projet_RoadMoto.dto.SortieRequest;
 import com.projet.projet_RoadMoto.dto.SortieResponse;
 import com.projet.projet_RoadMoto.dto.UtilisateurResume;
-import com.projet.projet_RoadMoto.entity.Participation;
+
 import com.projet.projet_RoadMoto.entity.Sortie;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
 import com.projet.projet_RoadMoto.exception.MauvaisOrganisateurException;
@@ -17,7 +17,7 @@ import com.projet.projet_RoadMoto.exception.SuppressionImpossibleException;
 import com.projet.projet_RoadMoto.exception.TransitionInvalideException;
 import com.projet.projet_RoadMoto.repository.ParticipationRepository;
 import com.projet.projet_RoadMoto.repository.SortieRepository;
-import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;

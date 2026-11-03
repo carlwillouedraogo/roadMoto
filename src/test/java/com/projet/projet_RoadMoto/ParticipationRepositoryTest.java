@@ -37,6 +37,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Teste les participations : contraintes en base (via le repository) et règles métier
+ * d'inscription / désinscription (via ParticipationService, importé dans le contexte de test).
+ * Chaque test tourne dans une transaction annulée à la fin (@DataJpaTest).
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
@@ -58,6 +63,7 @@ public class ParticipationRepositoryTest {
     private TestEntityManager em;
 
     @Test
+    // Une participation s'enregistre avec ses relations, et son statut par défaut est INSCRIT
     void testInsertionParticipant(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("test@gmail.com","alpha","123457"));
         Utilisateur utilisateur = utilisateurRepository.save(creerUtilisateur("test2@emil.com","beta", "123908"));
@@ -68,6 +74,7 @@ public class ParticipationRepositoryTest {
         Assertions.assertThat(participation.getInscritLe()).isNotNull();
         Assertions.assertThat(participation.getSortie()).isNotNull();
         Assertions.assertThat(participation.getUtilisateur()).isNotNull();
+        // flush + clear : relit la participation depuis la base, pas depuis le cache JPA
         em.flush();
         em.clear();
         Participation relue = participationRepository.findById(participation.getId()).orElseThrow();
@@ -78,6 +85,7 @@ public class ParticipationRepositoryTest {
     }
 
     @Test
+    // La contrainte unique (sortie, utilisateur) empêche d'inscrire deux fois le même motard
     void testDoubleInscriptionRefuse(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -85,12 +93,14 @@ public class ParticipationRepositoryTest {
 
         participationRepository.saveAndFlush(creerParticipation(motard, sortie));
 
+        // saveAndFlush force l'INSERT immédiat, donc la violation de contrainte remonte ici
         Assertions.assertThatThrownBy(() ->
                 participationRepository.saveAndFlush(creerParticipation(motard, sortie)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
+    // Se désinscrire ne supprime pas la ligne : le statut passe à DESIST et la place est libérée
     void testDesinscriptionPasseParticipationEnDesist(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -105,11 +115,12 @@ public class ParticipationRepositoryTest {
         Participation relue = participationRepository.findById(participation.getId()).orElseThrow();
         Assertions.assertThat(relue.getStatut()).isEqualTo(StatutParticipation.DESIST);
         Assertions.assertThat(reponse.statut()).isEqualTo(StatutParticipation.DESIST);
-        Assertions.assertThat(reponse.placesRestantes()).isEqualTo(10);
+        Assertions.assertThat(reponse.placesRestantes()).isEqualTo(10);   // 10 places, plus aucun inscrit
         Assertions.assertThat(participationRepository.countBySortieIdAndStatut(sortie.getId(), StatutParticipation.INSCRIT)).isZero();
     }
 
     @Test
+    // Impossible de se désinscrire d'une sortie à laquelle on n'est pas inscrit
     void testDesinscriptionNonInscritRefusee(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -121,6 +132,7 @@ public class ParticipationRepositoryTest {
     }
 
     @Test
+    // Une deuxième désinscription est refusée : après la première, le motard n'est plus inscrit
     void testDesinscriptionDejaDesisteRefusee(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -135,6 +147,7 @@ public class ParticipationRepositoryTest {
     }
 
     @Test
+    // L'organisateur est inscrit d'office et ne peut pas quitter sa propre sortie
     void testOrganisateurNePeutPasSeDesinscrire(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Sortie sortie = creerSortie("Tour du Léman", organisateur);
@@ -145,10 +158,13 @@ public class ParticipationRepositoryTest {
         Assertions.assertThatThrownBy(() ->
                 participationService.desInscription(publiee.getId(), organisateur))
                 .isInstanceOf(InscriptionImpossibleException.class);
+        // l'organisateur doit toujours être compté comme inscrit
         Assertions.assertThat(participationRepository.countBySortieIdAndStatut(publiee.getId(), StatutParticipation.INSCRIT)).isEqualTo(1);
     }
 
     @Test
+    // Après un désistement, se réinscrire réactive la participation existante au lieu d'en créer une nouvelle
+    // (sinon la contrainte unique (sortie, utilisateur) bloquerait l'INSERT)
     void testReinscriptionApresDesistement(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -165,12 +181,13 @@ public class ParticipationRepositoryTest {
 
         Assertions.assertThat(reinscription.id()).isEqualTo(inscription.id());   // même ligne réactivée
         Assertions.assertThat(reinscription.statut()).isEqualTo(StatutParticipation.INSCRIT);
-        Assertions.assertThat(reinscription.placesRestantes()).isEqualTo(9);
+        Assertions.assertThat(reinscription.placesRestantes()).isEqualTo(9);   // 10 places, 1 inscrit
         Assertions.assertThat(participationRepository.findById(inscription.id()).orElseThrow().getStatut())
                 .isEqualTo(StatutParticipation.INSCRIT);
     }
 
     @Test
+    // Le service refuse une deuxième inscription avec une erreur métier, avant d'atteindre la contrainte en base
     void testInscriptionDejaInscritRefusee(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -186,12 +203,13 @@ public class ParticipationRepositoryTest {
     }
 
     @Test
+    // On ne peut plus se désinscrire une fois l'heure de départ passée
     void testDesinscriptionSortieDejaPartieRefusee(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
         Sortie sortie = creerSortie("Tour du Léman", organisateur);
         sortie.setStatut(Statut.PUBLIEE);
-        sortie.setDateDepart(OffsetDateTime.now().minusMinutes(5));
+        sortie.setDateDepart(OffsetDateTime.now().minusMinutes(5));   // partie il y a 5 min
         Sortie partie = sortieRepository.save(sortie);
         participationRepository.saveAndFlush(creerParticipation(motard, partie));
 
@@ -201,6 +219,7 @@ public class ParticipationRepositoryTest {
     }
 
     @Test
+    // Quand un motard quitte une sortie COMPLETE, une place se libère et la sortie repasse en PUBLIEE
     void testDesinscriptionRouvreSortieComplete(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
@@ -220,9 +239,11 @@ public class ParticipationRepositoryTest {
     }
 
     @Test
+    // L'historique d'un motard contient toutes ses participations, et peut être filtré par statut
     void testHistoriqueParticipant(){
         Utilisateur organisateur = utilisateurRepository.save(creerUtilisateur("orga@example.com","orga","12345"));
         Utilisateur motard = utilisateurRepository.save(creerUtilisateur("motard@example.com","motard","12345"));
+        // trois cas : une sortie où il est inscrit, une qu'il a quittée, une qu'il organise
         Sortie inscrite = sortieRepository.save(creerSortie("Tour du Léman", organisateur));
         Sortie quittee = sortieRepository.save(creerSortie("Col de la Faucille", organisateur));
         Sortie organisee = sortieRepository.save(creerSortie("Ma balade", motard));
@@ -243,6 +264,7 @@ public class ParticipationRepositoryTest {
                 .containsExactlyInAnyOrder(inscrite.getId(), quittee.getId(), organisee.getId());
         Assertions.assertThat(desistements.getContent()).extracting(h -> h.sortie().id())
                 .containsExactly(quittee.getId());
+        // l'organisateur de la sortie est bien inclus dans la réponse
         Assertions.assertThat(desistements.getContent().get(0).sortie().organisateur().pseudo()).isEqualTo("orga");
     }
 
@@ -254,6 +276,7 @@ public class ParticipationRepositoryTest {
         return participation;
     }
 
+    // Sortie BROUILLON de 10 places dans 30 jours ; chaque test ajuste le statut ou la date si besoin
     private Sortie creerSortie(String titre, Utilisateur utilisateur){
         Sortie sortie = new Sortie();
         sortie.setTitre(titre);

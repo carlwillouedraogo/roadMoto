@@ -16,6 +16,10 @@ import io.jsonwebtoken.security.SignatureException;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Test unitaire pur (pas de contexte Spring) : JwtService est instancié à la main
+ * avec une clé HS256 générée aléatoirement pour chaque test.
+ */
 class JwtServiceTest {
 
     private String secret;
@@ -24,8 +28,9 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
+        // clé HMAC-SHA256 aléatoire, encodée en Base64 comme dans la configuration de l'appli
         secret = Encoders.BASE64.encode(Jwts.SIG.HS256.key().build().getEncoded());
-        jwtService = new JwtService(secret, 3_600_000L);
+        jwtService = new JwtService(secret, 3_600_000L);   // durée de validité : 1 h
         utilisateur = User.builder()
                 .username("carl@example.com").password("peu-importe")
                 .authorities("ROLE_USER").build();
@@ -36,7 +41,7 @@ class JwtServiceTest {
         String token = jwtService.generateTokens(utilisateur);
 
         assertThat(token).isNotNull();
-        assertThat(token.split("\\.")).hasSize(3);
+        assertThat(token.split("\\.")).hasSize(3);   // format JWT : header.payload.signature
         assertThat(jwtService.extractEmail(token)).isEqualTo("carl@example.com");
     }
 
@@ -48,6 +53,7 @@ class JwtServiceTest {
 
     @Test
     void refuse_le_token_d_un_autre_utilisateur() {
+        // token valide, mais émis pour un autre email que celui de l'utilisateur vérifié
         String token = jwtService.generateTokens(utilisateur);
         UserDetails autre = User.builder()
                 .username("autre@example.com").password("x").authorities("ROLE_USER").build();
@@ -57,6 +63,7 @@ class JwtServiceTest {
 
     @Test
     void refuse_un_token_expire() {
+        // durée négative : le token est déjà expiré au moment où il est généré
         JwtService jwtExpire = new JwtService(secret, -1000L);
         String token = jwtExpire.generateTokens(utilisateur);
 
@@ -66,6 +73,7 @@ class JwtServiceTest {
 
     @Test
     void refuse_un_token_signe_avec_une_autre_cle() {
+        // token produit par un autre service avec sa propre clé : la signature ne doit pas être acceptée
         String autreSecret = Encoders.BASE64.encode(
                 Jwts.SIG.HS256.key().build().getEncoded());
         String tokenEtranger = new JwtService(autreSecret, 3_600_000L)

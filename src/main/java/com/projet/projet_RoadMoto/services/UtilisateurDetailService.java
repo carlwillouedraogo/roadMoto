@@ -8,6 +8,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * Pont entre Spring Security et nos utilisateurs : Spring Security l'appelle pour charger
+ * un utilisateur à partir de son identifiant de connexion, ici l'email.
+ */
 @Service
 public class UtilisateurDetailService implements UserDetailsService {
     private final UtilisateurRepository repository;
@@ -21,6 +25,7 @@ public class UtilisateurDetailService implements UserDetailsService {
         Utilisateur u = repository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(email));
 
+        // UtilisateurPrincipal adapte notre entité Utilisateur à l'interface UserDetails de Spring Security
         return new UtilisateurPrincipal(u);
     }
 }
