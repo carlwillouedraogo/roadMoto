@@ -1,4 +1,8 @@
 spring:
+  http:
+    client:
+      read-timeout: 160s
+      connect-timeout: 5s
   datasource:
     url: jdbc:postgresql://localhost:5432/sorties_moto
     username: moto
@@ -13,6 +17,8 @@ spring:
         max-page-size: 100
 
 app:
+  overpass:
+    url: https://overpass-api.de/api/interpreter
   jwt:
     # Clé encodée en Base64 (min. 256 bits) — générer avec : openssl rand -base64 32
     secret: ${JWT_SECRET:ld/zZZx2vtWmdeNZ1p+Yp8R9j7xpRugscmfopCt33Iw=}

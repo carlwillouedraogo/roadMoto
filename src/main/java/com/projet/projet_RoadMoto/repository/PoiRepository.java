@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PoiRepository extends JpaRepository<Poi,Long> {
     @Query(value = """
@@ -18,4 +19,6 @@ public interface PoiRepository extends JpaRepository<Poi,Long> {
                          @Param("lat") double lat,
                          @Param("rayonMetres") int rayonMetres,
                          @Param("type") String type);
+
+    Optional<Poi> findByOsmId(Long osmId);
 }

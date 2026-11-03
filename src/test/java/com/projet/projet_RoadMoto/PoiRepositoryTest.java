@@ -21,6 +21,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Teste la recherche de POI par proximité (requête PostGIS ST_DWithin) sur une vraie base PostGIS.
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
@@ -45,6 +48,7 @@ public class PoiRepositoryTest {
         Poi carouge = poiRepository.save(createPoi("Carouge",TypePoi.STATION,6.1393,46.1840,382));
         poiRepository.save(createPoi("Restaurant Genève",TypePoi.RESTAURANT,6.1450,46.2050,375));
         poiRepository.save(createPoi("Lausanne",TypePoi.STATION,6.6323,46.5197,495));
+        // flush + clear : la requête native doit lire les données en base, pas le cache JPA
         em.flush();
         em.clear();
 
@@ -53,7 +57,7 @@ public class PoiRepositoryTest {
 
         assertThat(listPoi)
                 .extracting(PoiResponse::id)
-                .containsExactly(geneve.getId(), carouge.getId());
+                .containsExactly(geneve.getId(), carouge.getId());   // triés du plus proche au plus loin
 
     }
 
