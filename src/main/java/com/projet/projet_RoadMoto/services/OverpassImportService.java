@@ -6,7 +6,7 @@ import com.projet.projet_RoadMoto.dto.OverpassElement;
 import com.projet.projet_RoadMoto.dto.OverpassResponse;
 import com.projet.projet_RoadMoto.domain.ResultatImport;
 import com.projet.projet_RoadMoto.entity.Poi;
-import com.projet.projet_RoadMoto.repository.PoiRepository;
+import com.projet.projet_RoadMoto.repository.OverpassImportRepository;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -25,7 +25,7 @@ public class OverpassImportService {
 
     private static final Logger log = LoggerFactory.getLogger(OverpassImportService.class);
 
-    private final PoiRepository poiRepository;
+    private final OverpassImportRepository overpassImportRepository;
     private final String overpassUrl;
 
     private final RestClient client;
@@ -33,10 +33,10 @@ public class OverpassImportService {
     private static final GeometryFactory GEO =
             new GeometryFactory(new PrecisionModel(), 4326);
 
-    public OverpassImportService(PoiRepository poiRepository,
+    public OverpassImportService(OverpassImportRepository overpassImportRepository,
                                  RestClient.Builder builder,
                                  @Value("${app.overpass.url}") String overpassUrl) {
-        this.poiRepository = poiRepository;
+        this.overpassImportRepository = overpassImportRepository;
         this.overpassUrl = overpassUrl;
         this.client = builder
                 .defaultHeader("User-Agent", "RoadMoto/0.1 (projet portfolio)")
@@ -74,8 +74,8 @@ public class OverpassImportService {
                 ignores++;
                 continue;
             }
-            Optional<Poi> existant = poiRepository.findByOsmId(e.id());
-            poiRepository.save(existant.map(p -> mettreAJour(p, e, type.get()))
+            Optional<Poi> existant = overpassImportRepository.findByOsmId(e.id());
+            overpassImportRepository.save(existant.map(p -> mettreAJour(p, e, type.get()))
                     .orElseGet(() -> creer(e, type.get())));
             if (existant.isPresent()) misAJour++;
             else crees++;

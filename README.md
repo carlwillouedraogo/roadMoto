@@ -155,10 +155,29 @@ docker compose up -d
 
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev    # logs SQL et statistiques
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=demo   # jeu de données de démonstration
-```
 
+
+# Importe les cols routiers valaisans depuis OpenStreetMap,
+# puis applique les fermetures saisonnières
+./mvnw spring-boot:run -Dspring-boot.run.profiles=import-poi 
+# Réapplique uniquement les fermetures, sans réinterroger OpenStreetMap
+./mvnw spring-boot:run -Dspring-boot.run.profiles=import-fermetures
+```
 L'API écoute sur `http://localhost:8081`.
 Flyway crée le schéma au premier démarrage.
+
+Les deux imports sont idempotents : les relancer met à jour les données existantes
+sans créer de doublons.
+
+**Source des POI** : API Overpass, filtrée sur les nœuds `mountain_pass=yes`
+appartenant au réseau routier — ce qui écarte les cols de randonnée inaccessibles
+en moto.
+
+**Source des fermetures** : `src/main/resources/fermetures-cols.json`, renseigné
+à la main d'après les données du [TCS](https://www.tcs.ch/fr/tools/inforoute/cols-suisses.php).
+Seuls les cols dont le statut a pu être vérifié y figurent ; les autres sont traités
+comme « ouverture inconnue » plutôt que supposés ouverts.
+
 
 ### Configuration
 

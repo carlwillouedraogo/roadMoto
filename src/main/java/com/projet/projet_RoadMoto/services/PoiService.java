@@ -1,14 +1,9 @@
 package com.projet.projet_RoadMoto.services;
 
-import com.projet.projet_RoadMoto.domain.Source;
 import com.projet.projet_RoadMoto.domain.TypePoi;
-import com.projet.projet_RoadMoto.dto.OverpassElement;
 import com.projet.projet_RoadMoto.dto.PoiResponse;
 import com.projet.projet_RoadMoto.entity.Poi;
 import com.projet.projet_RoadMoto.repository.PoiRepository;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

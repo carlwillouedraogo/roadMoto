@@ -1,4 +1,4 @@
-package com.projet.projet_RoadMoto.controller;
+package com.projet.projet_RoadMoto.runner;
 
 import com.projet.projet_RoadMoto.services.OverpassImportService;
 import org.springframework.boot.CommandLineRunner;
@@ -12,6 +12,7 @@ public class ImportPoiRunner implements CommandLineRunner {
 
     public ImportPoiRunner(OverpassImportService service) {
         this.service = service;
+
     }
 
     @Override

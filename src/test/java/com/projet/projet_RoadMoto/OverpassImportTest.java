@@ -4,7 +4,7 @@ import com.projet.projet_RoadMoto.domain.ResultatImport;
 import com.projet.projet_RoadMoto.domain.Source;
 import com.projet.projet_RoadMoto.domain.TypePoi;
 import com.projet.projet_RoadMoto.entity.Poi;
-import com.projet.projet_RoadMoto.repository.PoiRepository;
+import com.projet.projet_RoadMoto.repository.OverpassImportRepository;
 import com.projet.projet_RoadMoto.services.OverpassImportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,7 +67,7 @@ public class OverpassImportTest {
             """;
 
     @Autowired
-    private PoiRepository poiRepository;
+    private OverpassImportRepository overpassImportRepository;
 
     @Autowired
     private TestEntityManager em;
@@ -81,7 +81,7 @@ public class OverpassImportTest {
         RestClient.Builder builder = RestClient.builder();
         // bindTo doit être appelé avant que le service ne fasse builder.build()
         serveur = MockRestServiceServer.bindTo(builder).build();
-        service = new OverpassImportService(poiRepository, builder, URL);
+        service = new OverpassImportService(overpassImportRepository, builder, URL);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class OverpassImportTest {
         serveur.verify();
         assertThat(resultat).isEqualTo(new ResultatImport(2, 0, 3));
 
-        Poi col = poiRepository.findByOsmId(1L).orElseThrow();
+        Poi col = overpassImportRepository.findByOsmId(1L).orElseThrow();
         assertThat(col.getNom()).isEqualTo("Col du Grand-Saint-Bernard");
         assertThat(col.getType()).isEqualTo(TypePoi.COL);
         assertThat(col.getSource()).isEqualTo(Source.OSM);
@@ -107,15 +107,15 @@ public class OverpassImportTest {
         assertThat(col.getLocalisation().getX()).isEqualTo(7.1706);
         assertThat(col.getLocalisation().getY()).isEqualTo(45.8689);
 
-        Poi pointDeVue = poiRepository.findByOsmId(5L).orElseThrow();
+        Poi pointDeVue = overpassImportRepository.findByOsmId(5L).orElseThrow();
         assertThat(pointDeVue.getType()).isEqualTo(TypePoi.POINT_DE_VUE);
         // "1 950 m" doit être nettoyé en 1950
         assertThat(pointDeVue.getAltitudeMetres()).isEqualTo(1950);
 
         // les éléments invalides ne doivent pas être enregistrés
-        assertThat(poiRepository.findByOsmId(2L)).isEmpty();
-        assertThat(poiRepository.findByOsmId(3L)).isEmpty();
-        assertThat(poiRepository.findByOsmId(4L)).isEmpty();
+        assertThat(overpassImportRepository.findByOsmId(2L)).isEmpty();
+        assertThat(overpassImportRepository.findByOsmId(3L)).isEmpty();
+        assertThat(overpassImportRepository.findByOsmId(4L)).isEmpty();
     }
 
     @Test
@@ -128,10 +128,10 @@ public class OverpassImportTest {
         existant.setSource(Source.OSM);
         existant.setLocalisation(GEO.createPoint(new Coordinate(7.0, 45.0)));
         existant.setAltitudeMetres(2000);
-        Long idExistant = poiRepository.save(existant).getId();
+        Long idExistant = overpassImportRepository.save(existant).getId();
         em.flush();
         em.clear();
-        long totalAvant = poiRepository.count();
+        long totalAvant = overpassImportRepository.count();
 
         repondAvec(REPONSE_OVERPASS);
 
@@ -141,9 +141,9 @@ public class OverpassImportTest {
 
         // seul le point de vue (id 5) est nouveau : le col est mis à jour, pas dupliqué
         assertThat(resultat).isEqualTo(new ResultatImport(1, 1, 3));
-        assertThat(poiRepository.count()).isEqualTo(totalAvant + 1);
+        assertThat(overpassImportRepository.count()).isEqualTo(totalAvant + 1);
 
-        Poi misAJour = poiRepository.findByOsmId(1L).orElseThrow();
+        Poi misAJour = overpassImportRepository.findByOsmId(1L).orElseThrow();
         // même ligne en base (même id), mais champs rafraîchis depuis OSM
         assertThat(misAJour.getId()).isEqualTo(idExistant);
         assertThat(misAJour.getNom()).isEqualTo("Col du Grand-Saint-Bernard");
@@ -153,14 +153,14 @@ public class OverpassImportTest {
 
     @Test
     void importSansElementsNeFaitRienTest() {
-        long totalAvant = poiRepository.count();
+        long totalAvant = overpassImportRepository.count();
         // réponse sans "elements" : elements() vaut null côté Java
         repondAvec("{}");
 
         ResultatImport resultat = service.importerColsValais();
 
         assertThat(resultat).isEqualTo(new ResultatImport(0, 0, 0));
-        assertThat(poiRepository.count()).isEqualTo(totalAvant);
+        assertThat(overpassImportRepository.count()).isEqualTo(totalAvant);
     }
 
     // Prépare le mock : attend un POST sur l'URL Overpass et renvoie le JSON donné
