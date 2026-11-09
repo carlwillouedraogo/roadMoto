@@ -1,0 +1,9 @@
+[
+  { "osmId": 423639577, "nom": "Col des Planches", "ouvertToutAnnee": true },
+  { "osmId": 2001818936, "nom": "Col du Grand Saint-Bernard", "ouvertureDebut": 6, "ouvertureFin": 10},
+  { "osmId": 13057833955, "nom": "Col du Lein (Saxon)", "ouvertureDebut": 6, "ouvertureFin": 11},
+  { "osmId": 3308396762, "nom": "Col du Lein (Vollèges)", "ouvertToutAnnee": true},
+  { "osmId": 1456026791, "nom": "Grimselpass", "ouvertureDebut": 6, "ouvertureFin": 10 },
+  { "osmId": 2501960454, "nom": "Pas de Morgins", "ouvertToutAnnee": true},
+  { "osmId": 1456020279, "nom": "Simplonpass", "ouvertToutAnnee": true}
+]
