@@ -1,4 +1,4 @@
-package com.projet.projet_RoadMoto.dto;
+package com.projet.projet_RoadMoto.dto.poidto;
 
 import com.projet.projet_RoadMoto.domain.TypePoi;
 

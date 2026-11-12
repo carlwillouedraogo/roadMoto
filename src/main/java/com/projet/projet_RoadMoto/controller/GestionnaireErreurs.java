@@ -63,4 +63,34 @@ public class GestionnaireErreurs {
     public ProblemDetail emailDejaUtilise(EmailDejaUtiliseException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
+
+    @ExceptionHandler(SortieIntrouvableException.class)
+    public ProblemDetail sortieIntrouvableParId(SortieIntrouvableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Sortie " + e.getMessage() + " introuvable");
+    }
+
+    @ExceptionHandler(PoiIntrouvableException.class)
+    public ProblemDetail poiIntrouvable(PoiIntrouvableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(ItineraireIncalculableException.class)
+    public ProblemDetail itineraireIncalculable(ItineraireIncalculableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, e.getMessage());
+    }
+
+    @ExceptionHandler(ItineraireNonModifiableException.class)
+    public ProblemDetail itineraireNonModifiable(ItineraireNonModifiableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(ItineraireIntrouvableException.class)
+    public ProblemDetail itineraireIntrouvable(ItineraireIntrouvableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(EtapesInvalidesException.class)
+    public ProblemDetail etapesInvalides(EtapesInvalidesException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
 }

@@ -7,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.locationtech.jts.geom.Point;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 @Entity
 public class Sortie {
@@ -35,16 +34,20 @@ public class Sortie {
     @CreationTimestamp
     private OffsetDateTime creeLe;
 
+    // Égalité sur l'identifiant uniquement : pas de boucle entre associations bidirectionnelles,
+    // pas de chargement lazy déclenché, et instanceof accepte les proxies Hibernate.
+    // Une entité pas encore persistée n'est égale qu'à elle-même.
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Sortie sortie = (Sortie) o;
-        return distanceKm == sortie.distanceKm && dureeEstimeeMin == sortie.dureeEstimeeMin && placesMax == sortie.placesMax && version == sortie.version && Objects.equals(id, sortie.id) && Objects.equals(titre, sortie.titre) && Objects.equals(description, sortie.description) && Objects.equals(dateDepart, sortie.dateDepart) && Objects.equals(nomLieuDepart, sortie.nomLieuDepart) && Objects.equals(lieuDepart, sortie.lieuDepart) && niveau == sortie.niveau && statut == sortie.statut && Objects.equals(organisateur, sortie.organisateur) && Objects.equals(creeLe, sortie.creeLe);
+        if (this == o) return true;
+        if (!(o instanceof Sortie other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
+    // Constant pour rester stable quand l'id est attribué à la persistance (HashSet, etc.)
     @Override
     public int hashCode() {
-        return Objects.hash(id, titre, description, dateDepart, nomLieuDepart, lieuDepart, distanceKm, dureeEstimeeMin, niveau, placesMax, statut, version, organisateur, creeLe);
+        return Sortie.class.hashCode();
     }
 
     public Long getId() {

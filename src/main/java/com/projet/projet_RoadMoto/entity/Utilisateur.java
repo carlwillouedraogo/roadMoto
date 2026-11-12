@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 @Entity
 public class Utilisateur {
@@ -26,16 +25,20 @@ public class Utilisateur {
     @CreationTimestamp
     private OffsetDateTime creeLe;
 
+    // Égalité sur l'identifiant uniquement : pas de boucle entre associations bidirectionnelles,
+    // pas de chargement lazy déclenché, et instanceof accepte les proxies Hibernate.
+    // Une entité pas encore persistée n'est égale qu'à elle-même.
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Utilisateur that = (Utilisateur) o;
-        return id == that.id && Objects.equals(pseudo, that.pseudo) && Objects.equals(email, that.email) && Objects.equals(motDePasseHash, that.motDePasseHash) && Objects.equals(motoModele, that.motoModele) && niveau == that.niveau && role == that.role && Objects.equals(creeLe, that.creeLe);
+        if (this == o) return true;
+        if (!(o instanceof Utilisateur other)) return false;
+        return id != 0 && id == other.getId();
     }
 
+    // Constant pour rester stable quand l'id est attribué à la persistance (HashSet, etc.)
     @Override
     public int hashCode() {
-        return Objects.hash(id, pseudo, email, motDePasseHash, motoModele, niveau, role, creeLe);
+        return Utilisateur.class.hashCode();
     }
 
     public long getId() {

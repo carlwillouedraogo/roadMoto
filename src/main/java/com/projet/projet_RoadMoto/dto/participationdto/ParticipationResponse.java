@@ -1,6 +1,7 @@
-package com.projet.projet_RoadMoto.dto;
+package com.projet.projet_RoadMoto.dto.participationdto;
 
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
+import com.projet.projet_RoadMoto.dto.utilisateurdto.UtilisateurResume;
 
 import java.time.OffsetDateTime;
 

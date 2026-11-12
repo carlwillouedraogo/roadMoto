@@ -1,10 +1,10 @@
 package com.projet.projet_RoadMoto.services;
 
-import com.projet.projet_RoadMoto.dto.InscriptionRequest;
+import com.projet.projet_RoadMoto.dto.authdto.InscriptionRequest;
 import com.projet.projet_RoadMoto.domain.Role;
-import com.projet.projet_RoadMoto.dto.LoginRequest;
-import com.projet.projet_RoadMoto.dto.TokenResponse;
-import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
+import com.projet.projet_RoadMoto.dto.authdto.LoginRequest;
+import com.projet.projet_RoadMoto.dto.authdto.TokenResponse;
+import com.projet.projet_RoadMoto.dto.utilisateurdto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
 import com.projet.projet_RoadMoto.exception.UtilisateurIntrouvableException;
 import com.projet.projet_RoadMoto.repository.UtilisateurRepository;

@@ -1,4 +1,4 @@
-package com.projet.projet_RoadMoto.dto;
+package com.projet.projet_RoadMoto.dto.authdto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;

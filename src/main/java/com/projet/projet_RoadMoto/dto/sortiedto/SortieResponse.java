@@ -1,7 +1,8 @@
-package com.projet.projet_RoadMoto.dto;
+package com.projet.projet_RoadMoto.dto.sortiedto;
 
 import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Statut;
+import com.projet.projet_RoadMoto.dto.utilisateurdto.UtilisateurResume;
 
 import java.time.OffsetDateTime;
 

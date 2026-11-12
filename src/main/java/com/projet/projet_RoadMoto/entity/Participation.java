@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -29,16 +28,20 @@ public class Participation {
     @CreationTimestamp
     private OffsetDateTime inscritLe;
 
+    // Égalité sur l'identifiant uniquement : pas de boucle entre associations bidirectionnelles,
+    // pas de chargement lazy déclenché, et instanceof accepte les proxies Hibernate.
+    // Une entité pas encore persistée n'est égale qu'à elle-même.
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Participation that = (Participation) o;
-        return Objects.equals(id, that.id) && Objects.equals(sortie, that.sortie) && Objects.equals(utilisateur, that.utilisateur) && statut == that.statut && Objects.equals(inscritLe, that.inscritLe);
+        if (this == o) return true;
+        if (!(o instanceof Participation other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
+    // Constant pour rester stable quand l'id est attribué à la persistance (HashSet, etc.)
     @Override
     public int hashCode() {
-        return Objects.hash(id, sortie, utilisateur, statut, inscritLe);
+        return Participation.class.hashCode();
     }
 
     public Long getId() {

@@ -2,7 +2,7 @@ package com.projet.projet_RoadMoto;
 
 import com.projet.projet_RoadMoto.domain.Source;
 import com.projet.projet_RoadMoto.domain.TypePoi;
-import com.projet.projet_RoadMoto.dto.PoiResponse;
+import com.projet.projet_RoadMoto.dto.poidto.PoiResponse;
 import com.projet.projet_RoadMoto.entity.Poi;
 import com.projet.projet_RoadMoto.repository.PoiRepository;
 import com.projet.projet_RoadMoto.services.PoiService;

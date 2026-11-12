@@ -58,4 +58,7 @@ public interface SortieRepository extends JpaRepository<Sortie, Long> {
     Page<Sortie> historiqueOrganisateur(@Param("organisateurId") Long organisateurId,
                                         @Param("statut") Statut statut,
                                         Pageable pageable);
+
+    @EntityGraph(attributePaths = "organisateur")
+    Optional<Sortie> findWithOrganisateurById(Long id);
 }

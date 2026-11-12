@@ -4,7 +4,6 @@ import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Role;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
-import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.entity.Sortie;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
 import com.projet.projet_RoadMoto.exception.SortieCompleteException;
