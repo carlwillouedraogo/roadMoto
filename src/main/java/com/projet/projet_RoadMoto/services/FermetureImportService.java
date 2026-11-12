@@ -3,7 +3,7 @@ package com.projet.projet_RoadMoto.services;
 
 
 import com.projet.projet_RoadMoto.domain.ResultatImport;
-import com.projet.projet_RoadMoto.dto.FermetureReference;
+import com.projet.projet_RoadMoto.dto.poidto.FermetureReference;
 import com.projet.projet_RoadMoto.entity.FermetureSaisonniere;
 import com.projet.projet_RoadMoto.entity.Poi;
 import com.projet.projet_RoadMoto.repository.FermetureSaisonniereRepository;

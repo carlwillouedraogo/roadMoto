@@ -3,9 +3,9 @@ package com.projet.projet_RoadMoto.services;
 import com.projet.projet_RoadMoto.domain.Niveau;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
-import com.projet.projet_RoadMoto.dto.SortieRequest;
-import com.projet.projet_RoadMoto.dto.SortieResponse;
-import com.projet.projet_RoadMoto.dto.UtilisateurResume;
+import com.projet.projet_RoadMoto.dto.sortiedto.SortieRequest;
+import com.projet.projet_RoadMoto.dto.sortiedto.SortieResponse;
+import com.projet.projet_RoadMoto.dto.utilisateurdto.UtilisateurResume;
 
 import com.projet.projet_RoadMoto.entity.Sortie;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
@@ -156,6 +156,12 @@ public class SortieService {
         }
         return toResponse(sortie);
     }
+
+    /**
+     * Suppression d'une sortie par l'organisateur
+     * @param id
+     * @param organisateur
+     */
 
     @Transactional
     public void deleteSortie(Long id, Utilisateur organisateur){

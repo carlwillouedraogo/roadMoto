@@ -1,4 +1,4 @@
-package com.projet.projet_RoadMoto.dto;
+package com.projet.projet_RoadMoto.dto.sortiedto;
 
 
 import com.projet.projet_RoadMoto.domain.Niveau;
@@ -12,8 +12,8 @@ public record SortieRequest(
         @Size(max = 2000) String description,
         @Schema (example = "2026-11-15T09:00:00+01:00") @NotNull @Future OffsetDateTime dateDepart,
         @Schema (example = "Genève") @NotBlank String nomLieuDepart,
-        @Schema (example = "6.1432") @NotNull Double latitude,
-        @Schema (example = "46.2044") @NotNull Double longitude,
+        @Schema (example = "46.2044") @NotNull Double latitude,
+        @Schema (example = "6.1432") @NotNull Double longitude,
         @Schema (example = "DECOUVERTE") @NotNull Niveau niveau,
         @Min(2) @Max(50) int placesMax) {
 }

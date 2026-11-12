@@ -10,19 +10,31 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: false
   data:
     web:
       pageable:
         default-page-size: 20
         max-page-size: 100
+  cache:
+    cache-names: itineraires
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=24h
 
 app:
+  ors:
+    # hôte + préfixe uniquement : OrsClient ajoute /v2/directions/...
+    url: https://api.heigit.org/openrouteservice
+    # Pas de valeur par défaut : l'application refuse de démarrer sans ORS_API_KEY
+    # Clé gratuite sur https://openrouteservice.org/dev/#/signup
+    api-key: ${ORS_API_KEY}
   overpass:
     url: https://overpass-api.de/api/interpreter
   jwt:
+    # Pas de valeur par défaut : aucun secret ne doit être commité.
     # Clé encodée en Base64 (min. 256 bits) — générer avec : openssl rand -base64 32
-    secret: ${JWT_SECRET:ld/zZZx2vtWmdeNZ1p+Yp8R9j7xpRugscmfopCt33Iw=}
-    expiration-ms: 86400000   # 24h
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24h
 
 server:
   port: 8081

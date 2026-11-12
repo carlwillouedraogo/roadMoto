@@ -2,7 +2,6 @@ package com.projet.projet_RoadMoto.entity;
 
 import jakarta.persistence.*;
 
-import java.util.Objects;
 
 @Entity
 public class FermetureSaisonniere {
@@ -18,16 +17,20 @@ public class FermetureSaisonniere {
     private Integer moisOuvertureFin;
 
 
+    // Égalité sur l'identifiant uniquement : pas de boucle entre associations bidirectionnelles,
+    // pas de chargement lazy déclenché, et instanceof accepte les proxies Hibernate.
+    // Une entité pas encore persistée n'est égale qu'à elle-même.
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        FermetureSaisonniere that = (FermetureSaisonniere) o;
-        return ouvertTouteAnnee == that.ouvertTouteAnnee && Objects.equals(poiId, that.poiId) && Objects.equals(poi, that.poi) && Objects.equals(moisOuvertureDebut, that.moisOuvertureDebut) && Objects.equals(moisOuvertureFin, that.moisOuvertureFin);
+        if (this == o) return true;
+        if (!(o instanceof FermetureSaisonniere other)) return false;
+        return poiId != null && poiId.equals(other.getPoiId());
     }
 
+    // Constant pour rester stable quand l'id est attribué à la persistance (HashSet, etc.)
     @Override
     public int hashCode() {
-        return Objects.hash(poiId, poi, ouvertTouteAnnee, moisOuvertureDebut, moisOuvertureFin);
+        return FermetureSaisonniere.class.hashCode();
     }
 
     public Long getPoiId() {

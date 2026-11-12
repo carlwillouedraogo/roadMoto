@@ -1,10 +1,9 @@
 package com.projet.projet_RoadMoto.demo;
 
 import com.projet.projet_RoadMoto.domain.Niveau;
-import com.projet.projet_RoadMoto.dto.InscriptionRequest;
-import com.projet.projet_RoadMoto.dto.SortieRequest;
-import com.projet.projet_RoadMoto.dto.SortieResponse;
-import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
+import com.projet.projet_RoadMoto.dto.authdto.InscriptionRequest;
+import com.projet.projet_RoadMoto.dto.sortiedto.SortieRequest;
+import com.projet.projet_RoadMoto.dto.sortiedto.SortieResponse;
 import com.projet.projet_RoadMoto.entity.Utilisateur;
 import com.projet.projet_RoadMoto.repository.UtilisateurRepository;
 import com.projet.projet_RoadMoto.services.ParticipationService;

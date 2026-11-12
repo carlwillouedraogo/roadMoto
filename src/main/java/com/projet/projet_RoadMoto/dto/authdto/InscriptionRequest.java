@@ -1,4 +1,4 @@
-package com.projet.projet_RoadMoto.dto;
+package com.projet.projet_RoadMoto.dto.authdto;
 
 import com.projet.projet_RoadMoto.domain.Niveau;
 import io.swagger.v3.oas.annotations.media.Schema;

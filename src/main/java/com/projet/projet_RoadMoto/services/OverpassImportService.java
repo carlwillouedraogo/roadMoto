@@ -2,8 +2,8 @@ package com.projet.projet_RoadMoto.services;
 
 import com.projet.projet_RoadMoto.domain.Source;
 import com.projet.projet_RoadMoto.domain.TypePoi;
-import com.projet.projet_RoadMoto.dto.OverpassElement;
-import com.projet.projet_RoadMoto.dto.OverpassResponse;
+import com.projet.projet_RoadMoto.dto.poidto.OverpassElement;
+import com.projet.projet_RoadMoto.dto.poidto.OverpassResponse;
 import com.projet.projet_RoadMoto.domain.ResultatImport;
 import com.projet.projet_RoadMoto.entity.Poi;
 import com.projet.projet_RoadMoto.repository.OverpassImportRepository;

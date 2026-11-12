@@ -5,7 +5,6 @@ import com.projet.projet_RoadMoto.domain.TypePoi;
 import jakarta.persistence.*;
 import org.locationtech.jts.geom.Point;
 
-import java.util.Objects;
 
 
 @Entity
@@ -27,16 +26,20 @@ public class Poi {
     @Column(unique = true)
     private Long osmId;
 
+    // Égalité sur l'identifiant uniquement : pas de boucle entre associations bidirectionnelles,
+    // pas de chargement lazy déclenché, et instanceof accepte les proxies Hibernate.
+    // Une entité pas encore persistée n'est égale qu'à elle-même.
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Poi poi = (Poi) o;
-        return Objects.equals(id, poi.id) && Objects.equals(nom, poi.nom) && Objects.equals(localisation, poi.localisation) && Objects.equals(altitudeMetres, poi.altitudeMetres) && type == poi.type && source == poi.source && Objects.equals(osmId, poi.osmId);
+        if (this == o) return true;
+        if (!(o instanceof Poi other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
+    // Constant pour rester stable quand l'id est attribué à la persistance (HashSet, etc.)
     @Override
     public int hashCode() {
-        return Objects.hash(id, nom, localisation, altitudeMetres, type, source, osmId);
+        return Poi.class.hashCode();
     }
 
     public Long getId() {

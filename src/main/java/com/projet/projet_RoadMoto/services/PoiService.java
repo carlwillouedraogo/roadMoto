@@ -1,7 +1,7 @@
 package com.projet.projet_RoadMoto.services;
 
 import com.projet.projet_RoadMoto.domain.TypePoi;
-import com.projet.projet_RoadMoto.dto.PoiResponse;
+import com.projet.projet_RoadMoto.dto.poidto.PoiResponse;
 import com.projet.projet_RoadMoto.entity.Poi;
 import com.projet.projet_RoadMoto.repository.PoiRepository;
 import org.springframework.stereotype.Service;

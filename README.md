@@ -183,11 +183,14 @@ comme « ouverture inconnue » plutôt que supposés ouverts.
 
 | Variable | Défaut | Description |
 |---|---|---|
-| `JWT_SECRET` | clé de développement | Clé de signature HS256, encodée en Base64 |
+| `JWT_SECRET` | **obligatoire** | Clé de signature HS256, encodée en Base64 (min. 256 bits) |
 | `JWT_EXPIRATION_MS` | `86400000` | Durée de validité du token (24 h) |
+| `ORS_API_KEY` | **obligatoire** | Clé [OpenRouteService](https://openrouteservice.org/dev/#/signup) pour le calcul d'itinéraire |
 
-> La clé présente dans `application.yml` est une clé de développement sans valeur.
-> En production, `JWT_SECRET` est fourni par l'environnement.
+> Aucun secret n'est commité : l'application refuse de démarrer si `JWT_SECRET` ou `ORS_API_KEY` manque.
+> Générer une clé JWT : `openssl rand -base64 32`
+> (ou en PowerShell : `$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)`).
+> Les tests utilisent des valeurs factices définies dans `src/test/resources/application.properties`.
 
 ### Documentation de l'API
 
@@ -233,7 +236,7 @@ La CI exécute la même commande sur chaque pull request.
 - [x] Intégration continue
 - [x] Désincription à une sortie
 - [x] Historique pour les participants et l'organisateur
-- [ ] Import des POI depuis OpenStreetMap (canton pilote : Valais)
+- [x] Import des POI depuis OpenStreetMap (canton pilote : Valais)
 - [ ] Calcul d'itinéraires et mise en cache
 - [ ] Assistant d'itinéraire à sortie JSON structurée
 - [ ] Interface Angular

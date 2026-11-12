@@ -2,9 +2,9 @@ package com.projet.projet_RoadMoto.controller;
 
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.StatutParticipation;
-import com.projet.projet_RoadMoto.dto.HistoriqueParticipationResponse;
-import com.projet.projet_RoadMoto.dto.SortieResponse;
-import com.projet.projet_RoadMoto.dto.UtilisateurResponse;
+import com.projet.projet_RoadMoto.dto.participationdto.HistoriqueParticipationResponse;
+import com.projet.projet_RoadMoto.dto.sortiedto.SortieResponse;
+import com.projet.projet_RoadMoto.dto.utilisateurdto.UtilisateurResponse;
 import com.projet.projet_RoadMoto.security.UtilisateurPrincipal;
 import com.projet.projet_RoadMoto.services.ParticipationService;
 import com.projet.projet_RoadMoto.services.SortieService;
