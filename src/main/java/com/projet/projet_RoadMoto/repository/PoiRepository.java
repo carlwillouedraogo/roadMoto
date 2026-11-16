@@ -21,4 +21,5 @@ public interface PoiRepository extends JpaRepository<Poi,Long> {
                          @Param("type") String type);
 
     Optional<Poi> findByOsmId(Long osmId);
+
 }

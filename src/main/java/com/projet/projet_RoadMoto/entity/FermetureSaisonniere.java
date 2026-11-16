@@ -33,6 +33,13 @@ public class FermetureSaisonniere {
         return FermetureSaisonniere.class.hashCode();
     }
 
+    public boolean estOuvertEn(int mois) {
+        if (ouvertTouteAnnee) return true;
+        if (moisOuvertureDebut == null || moisOuvertureFin == null) return true; // le col est ouvert
+        if (moisOuvertureDebut <= moisOuvertureFin) return mois >= moisOuvertureDebut && mois <= moisOuvertureFin;
+        return mois >= moisOuvertureDebut || mois <= moisOuvertureFin;
+    }
+
     public Long getPoiId() {
         return poiId;
     }

@@ -18,7 +18,7 @@ import java.util.List;
         {
           "etapes": [
             { "longitude": 7.0717, "latitude": 46.1028, "type": "DEPART" },
-            { "poiId": 774, "type": "INTERMEDIAIRE", "dureeArretMin": 15 },
+            { "poiId": 778, "type": "INTERMEDIAIRE", "dureeArretMin": 15 },
             { "longitude": 7.3606, "latitude": 46.2331, "type": "ARRIVEE" }
           ]
         }
