@@ -35,11 +35,11 @@ avec, et un contexte géographique suisse.
 - Inscription avec les règles métier du domaine
 - Inscription automatique de l'organisateur à la création
 - Calcul des places restantes
+- Import des points d'intérêt depuis OpenStreetMap (cols, restaurants, points de vue)
+- Calcul d'itinéraires via OpenRouteService
 
 **En cours**
 
-- Import des points d'intérêt depuis OpenStreetMap (cols, restaurants, points de vue)
-- Calcul d'itinéraires via OpenRouteService
 - Assistant d'itinéraire en langage naturel
 - Interface Angular avec cartographie
 - Désincription à une sortie
@@ -101,9 +101,20 @@ les entités correspondent au schéma et refuse de démarrer sinon. Cette rigueu
 plusieurs divergences de nommage avant qu'elles n'atteignent la production.
 
 **PostGIS plutôt qu'un calcul de distance applicatif**
-Les positions sont stockées en `geography(Point, 4326)` avec un index GIST. Les
-recherches par proximité utiliseront `ST_DWithin`, qui exploite l'index là où un calcul
-de Haversine en Java imposerait un parcours complet de la table.
+Les positions sont stockées en `geography(Point, 4326)` et les tracés d'itinéraire
+en `geography(LineString, 4326)`, tous deux avec un index GIST. Les recherches par
+proximité utilisent `ST_DWithin`, qui exploite l'index — là où un calcul de Haversine
+en Java imposerait un parcours complet de la table.
+
+**Détection des cols par le tracé, pas par les étapes**
+Un itinéraire peut franchir un col sans que l'organisateur l'ait désigné comme étape,
+et il sera tout aussi impraticable en février. La vérification saisonnière interroge
+donc la géométrie du parcours plutôt que la liste des étapes. C'est cette contrainte
+qui a justifié de stocker le tracé complet renvoyé par OpenRouteService, et non les
+seuls points demandés.
+
+Le système avertit, il ne bloque jamais : aux saisons intermédiaires — avril, juin,
+octobre — l'organisateur en sait souvent plus que la donnée.
 
 **Testcontainers plutôt qu'une base H2**
 Les tests s'exécutent contre un vrai PostgreSQL avec PostGIS, la même image qu'en
@@ -225,6 +236,8 @@ La CI exécute la même commande sur chaque pull request.
 - Pas de refresh token : l'utilisateur doit se reconnecter à l'expiration.
 - Les fermetures saisonnières des cols sont saisies manuellement, sans source
   officielle automatisée.
+- Les données de fermeture ne couvrent que les cols vérifiés au TCS, 
+  donc l’absence d’avertissement ne garantit pas la praticabilité.
 
 ---
 
@@ -237,7 +250,7 @@ La CI exécute la même commande sur chaque pull request.
 - [x] Désincription à une sortie
 - [x] Historique pour les participants et l'organisateur
 - [x] Import des POI depuis OpenStreetMap (canton pilote : Valais)
-- [ ] Calcul d'itinéraires et mise en cache
+- [x] Calcul d'itinéraires et mise en cache
 - [ ] Assistant d'itinéraire à sortie JSON structurée
 - [ ] Interface Angular
 - [ ] Déploiement
