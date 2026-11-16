@@ -25,6 +25,7 @@ import com.projet.projet_RoadMoto.exception.SortieIntrouvableException;
 import com.projet.projet_RoadMoto.repository.ItineraireRepository;
 import com.projet.projet_RoadMoto.repository.PoiRepository;
 import com.projet.projet_RoadMoto.repository.SortieRepository;
+import com.projet.projet_RoadMoto.services.FermetureSaisonniereService;
 import com.projet.projet_RoadMoto.services.ItineraireService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,12 +74,15 @@ class ItineraireServiceTest {
     @Mock
     private TransactionTemplate transactionTemplate;
 
+    @Mock
+    private FermetureSaisonniereService fermetureSaisonniereService;
+
     private ItineraireService service;
 
     @BeforeEach
     void setUp() {
         service = new ItineraireService(sortieRepository, itineraireRepository,
-                poiRepository, orsClient, transactionTemplate);
+                poiRepository, orsClient, transactionTemplate, fermetureSaisonniereService);
     }
 
     // ---------- cas nominal ----------

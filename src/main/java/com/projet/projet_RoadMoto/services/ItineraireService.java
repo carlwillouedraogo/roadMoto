@@ -4,6 +4,7 @@ import com.projet.projet_RoadMoto.client.OrsClient;
 import com.projet.projet_RoadMoto.domain.Source;
 import com.projet.projet_RoadMoto.domain.Statut;
 import com.projet.projet_RoadMoto.domain.TypeEtape;
+import com.projet.projet_RoadMoto.dto.AvertissementResponse;
 import com.projet.projet_RoadMoto.dto.itinerairedto.CalculItineraireRequest;
 import com.projet.projet_RoadMoto.dto.etapedto.EtapeRequest;
 import com.projet.projet_RoadMoto.dto.etapedto.EtapeResponse;
@@ -43,17 +44,19 @@ public class ItineraireService {
     private final PoiRepository poiRepository;
     private final OrsClient orsClient;
     private final TransactionTemplate transactionTemplate;
+    private final FermetureSaisonniereService fermetureSaisonniereService;
 
     public ItineraireService(SortieRepository sortieRepository,
                              ItineraireRepository itineraireRepository,
                              PoiRepository poiRepository,
                              OrsClient orsClient,
-                             TransactionTemplate transactionTemplate) {
+                             TransactionTemplate transactionTemplate, FermetureSaisonniereService fermetureSaisonniereService) {
         this.sortieRepository = sortieRepository;
         this.itineraireRepository = itineraireRepository;
         this.poiRepository = poiRepository;
         this.orsClient = orsClient;
         this.transactionTemplate = transactionTemplate;
+        this.fermetureSaisonniereService = fermetureSaisonniereService;
     }
 
     /**
@@ -92,7 +95,9 @@ public class ItineraireService {
             itineraireRepository.supprimerParSortieId(sortieId);
             return itineraireRepository.save(itineraire);
         });
-        return toResponse(enregistre, sortie);
+        List<AvertissementResponse> avertissements =
+                fermetureSaisonniereService.avertissements(sortieId, sortie.getDateDepart());
+        return toResponse(enregistre, sortie, avertissements);
     }
 
     /**
@@ -112,7 +117,8 @@ public class ItineraireService {
         if (sortie.getStatut() == Statut.BROUILLON && !estOrganisateur) {
             throw new ItineraireIntrouvableException(sortieId);
         }
-        return toResponse(itineraire, sortie);
+        return toResponse(itineraire, sortie,
+                fermetureSaisonniereService.avertissements(sortieId, sortie.getDateDepart()));
     }
 
     /**
@@ -248,7 +254,7 @@ public class ItineraireService {
      * @param sortie
      * @return ItineraireResponse
      */
-    private ItineraireResponse toResponse(Itineraire itineraire, Sortie sortie) {
+    private ItineraireResponse toResponse(Itineraire itineraire, Sortie sortie, List<AvertissementResponse> avertissementResponse) {
         OffsetDateTime heure = sortie.getDateDepart();
         List<EtapeResponse> etapes = new ArrayList<>();
         for (Etape e : itineraire.getEtapes()) {
@@ -283,7 +289,8 @@ public class ItineraireService {
                 trace,
                 etapes,
                 itineraire.getSource(),
-                itineraire.getCalculeLe());
+                itineraire.getCalculeLe(),
+                avertissementResponse);
     }
 
 

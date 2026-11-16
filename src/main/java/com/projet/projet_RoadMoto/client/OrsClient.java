@@ -109,9 +109,8 @@ public class OrsClient {
     private Map<String, Object> corps(List<List<Double>> coordonnees) {
         Map<String, Object> corps = new LinkedHashMap<>();
         corps.put("coordinates", coordonnees);
-        // pas d'instructions de navigation (steps) : c'est le plus gros de la réponse et on ne s'en sert pas ;
-        // segments (distance/durée par tronçon) reste renvoyé
-        corps.put("instructions", false);
+        // ne pas envoyer "instructions": false : ORS ne renverrait alors plus les segments
+        // (distance/durée par tronçon), dont on a besoin pour les étapes
         if (coordonnees.size() == 2) {
             corps.put("geometry_simplify", true);
         }

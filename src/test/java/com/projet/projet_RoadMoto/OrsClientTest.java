@@ -43,7 +43,7 @@ class OrsClientTest {
         serveur.expect(requestTo(URL))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header("Authorization", "cle-test"))
-                .andExpect(content().json("{\"coordinates\":[[7.36,46.23],[7.29,46.33]],\"instructions\":false,\"geometry_simplify\":true}", JsonCompareMode.STRICT))
+                .andExpect(content().json("{\"coordinates\":[[7.36,46.23],[7.29,46.33]],\"geometry_simplify\":true}", JsonCompareMode.STRICT))
                 .andRespond(withSuccess("""
                         {"type":"FeatureCollection","bbox":[7.29,46.23,7.36,46.33],
                          "features":[{"type":"Feature",
@@ -109,7 +109,7 @@ class OrsClientTest {
         // ORS refuse geometry_simplify sur une route de plus d'un segment
         serveur.expect(requestTo(URL))
                 .andExpect(content().json(
-                        "{\"coordinates\":[[7.07,46.10],[7.00,46.06],[7.36,46.23]],\"instructions\":false}", JsonCompareMode.STRICT))
+                        "{\"coordinates\":[[7.07,46.10],[7.00,46.06],[7.36,46.23]]}", JsonCompareMode.STRICT))
                 .andRespond(withSuccess("""
                         {"features":[{"geometry":{"coordinates":[[7.07,46.10],[7.00,46.06],[7.36,46.23]]},
                           "properties":{"summary":{"distance":50000.0,"duration":3600.0},
