@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: moto-db
+    environment:
+      POSTGRES_DB: sorties_moto
+      POSTGRES_USER: moto
+      POSTGRES_PASSWORD: moto
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
